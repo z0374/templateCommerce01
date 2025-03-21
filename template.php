@@ -3,10 +3,20 @@ $bgbody='';$title='farm';
 require ('../WaranasLibrary/waranas.php');
  $section=[];$grids=[];
 $produtos=[];
+
+//Carregar dados do bot
+$urlJson = '';
+    $key = '';
+    $pageToken = '';
+    $authToken = '';
+    $data = getJsonData($urlJson, $key, $authToken, $pageToken);
+$data_header=[...$data['header']];
+
     $head[]='<script src="https://kit.fontawesome.com/b42a2f6a22.js" crossorigin="anonymous"></script>';
   $menu=[['url'=>'contato.html','content'=>'Contato'],['url'=>'sm.html','content'=>'Saiba mais...']];
- 
-  $header[]= '<a class="return" href="/portifolio" style="position:absolute;z-index:6;top:0.3vw;left:0.6vw;font-size:1.5rem;z-index:9;"><i class="fa-solid fa-arrow-left" style="color:#ffffff;"></i></a><h1 class="ttl" id="topo">Meu Comércio</h1>';
+
+if(filter_image($data_header[1])){$data_header[1]=null}
+	$header[]= "<img aria-label='Imagem de logo do {$data_header[0]}' alt='logo do {$data_header[0]' id='logo' loading='lazy' title='logo {$data_header[0]}' src='{$data_header[1]}'><h1 class='ttl' id='topo'>{$data_header[0]}</h1>";}
  
 	$header[]= menu($menu,'#F2EDF0');
   $section[]= '<figure id="img"></figure>';
