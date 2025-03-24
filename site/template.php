@@ -1,4 +1,4 @@
-<?php  //header - apresentation - images - classes - avaliation - colors
+<?php  //users - header - apresentation - images - classes - avaliation - config
 $bgbody='';$title='farm';
 require ('../WaranasLibrary/waranas.php');
  $section=[];$grids=[];
