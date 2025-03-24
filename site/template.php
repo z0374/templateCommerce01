@@ -1,4 +1,4 @@
-<?php  
+<?php  //header - apresentation - images - classes - avaliation - colors
 $bgbody='';$title='farm';
 require ('../WaranasLibrary/waranas.php');
  $section=[];$grids=[];
@@ -15,7 +15,7 @@ $data_header=[...$data['header']];
     $head[]='<script src="https://kit.fontawesome.com/b42a2f6a22.js" crossorigin="anonymous"></script>';
   $menu=[['url'=>'contato.html','content'=>'Contato'],['url'=>'sm.html','content'=>'Saiba mais...']];
 
-if(filter_image($data_header[1])){$data_header[1]=null}
+if(filter_image($data_header[1])){$data_header[1]=null}	//'Logo' - 'Nome do comercio' - 'descrição breve da imagem' / [botões do menu]
 	$header[]= "<img aria-label='Imagem de logo do {$data_header[0]}' alt='logo do {$data_header[0]' id='logo' loading='lazy' title='logo {$data_header[0]}' src='{$data_header[1]}'><h1 class='ttl' id='topo'>{$data_header[0]}</h1>";}
  
 	$header[]= menu($menu,'#F2EDF0');
