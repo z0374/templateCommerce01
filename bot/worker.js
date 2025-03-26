@@ -372,7 +372,7 @@ async function recUser(userId, update, env) {
     }
   }
   
-  async function images(update, fileName, env) {
+  /*async function images(update, fileName, env) {
     const BOT_TOKEN = env.bot_Token; // Substitua pelo seu token
     const MEGA_EMAIL = env.mega_email; // E-mail do Mega.nz
     const MEGA_PASSWORD = env.mega_password; // Senha do Mega.nz
@@ -418,7 +418,7 @@ async function recUser(userId, update, env) {
         console.error("Erro no processamento:", error);
         return null;
     }
-}
+}*/
 
 // Função para realizar o login no Mega.nz
 async function loginToMega(email, password) {
