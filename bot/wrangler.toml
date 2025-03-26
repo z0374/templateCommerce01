@@ -1,0 +1,24 @@
+name = "template_comerce01"
+minify = false
+type = 'javascript'
+
+account_id = "448a5b0c80d31dbd28fe2e8afdd9a050"
+workers_dev = true  # Para rodar no domínio de workers-dev
+compatibility_date = "2024-02-18"  # Use a data atual
+node_compat = false
+main = "worker.js"  # Caminho correto para o seu script
+
+[build.upload]
+format = "service-worker"
+[build]
+minify = false
+sourcemap = false
+
+[[kv_namespaces]]
+binding = "sessionState"
+id = "46fb877c8a0d4d4ea1c7cd58732d555f"
+
+[[d1_databases]]
+binding = "Data"  # Nome da variável no código
+database_name = "template_comerce01"
+database_id = "f804454f-52f2-44cb-aaa0-30ebee5c36db"
