@@ -94,8 +94,9 @@ if(users === null && messageText == '/index' || users === null && messageText ==
         
             default:  //Caso não seja nenhuma das chaves anteriores passa para as chaves de seção do usuário
              if(userState.proces===''){return new Response('Nenhum processo iniciado')}
+			
               switch (userState.state.toLowerCase()) {  //abre uma chave utilizando o estado do usuário em minúsculo
-            
+			      
                 //CABEÇALHO DA PÁGINA
                   case 'waiting_section_cabecalho':
                     userState.state = 'waiting_logo_cabecalho';
@@ -104,20 +105,37 @@ if(users === null && messageText == '/index' || users === null && messageText ==
                     break;
 
                   case 'waiting_logo_cabecalho':
-                    const logo = ['logoDoCabeçalho',];
-                    await dados('save',logo,['images',logo],userId);  
-                    userState.state = 'waiting_nome_cabecalho';  
+					const img = await images(request, 'logoDoCabeçalho', env);
+                    const logo = ['logoDoCabeçalho', img, 'img'];
+					const coluns = ['nome', 'arquivo', 'tipo']
+                    await dados('save',logo,['assets',logo],userId);  
+                    userState.state = 'waiting_nome_cabecalho';	userState.dados.push(logo);
                     await saveUserState(env, userId, userState);  
                     await sendMessage(`Certo sr. ${userName}, vamos continuar com a configuração do cabeçalho do site!\n Me informe o nome da sua impresa.:`,env);
                       break;
-                                  
-                  case 'waiting_logo_cabecalho':
-                    const content = [];
-                    await dados('save',content,['images',],userId);  
-                    userState.state = 'waiting_nome_cabecalho';  
+					  
+                  case 'waiting_nome_cabecalho':
+                    await dados('save',messageText,'config',userId);  
+                    userState.state = 'waiting_acessibilidade_cabecalho';  
                     await saveUserState(env, userId, userState);  
-                    await sendMessage(`Certo sr. ${userName}, vamos continuar com a configuração do cabeçalho do site!\n Me informe o nome da sua impresa.:`,env);
-                      break;    
+                    await sendMessage(`Ok sr. ${userName}, por fim me descreva a logo da sua impresa!\n(fins de acessibilidade).:`,env);
+					  break;
+					  
+				case 'waiting_acessibilidade_cabecalho':
+					userState.state = 'waiting_confirm_cabecalho';
+					await saveUserState(env, userId, userState);
+					await sendMessage(`Ok sr. ${userName}, `,env);
+						break;
+					  
+			case 'waiting_confirm_cabecalho':
+				await yesOrNo(messageText);
+				await saveUserState(env, userId, null);
+					break;
+
+		      default:
+				const mensagem = 'Comando ou estado de usuário desconhecido.';
+			      	await sendMessage(mensagem, env);
+			return new Response(mensagem, {status:200});
               }
 
         }
@@ -249,7 +267,7 @@ if(users === null && messageText == '/index' || users === null && messageText ==
                   const tableExists = await _data.prepare(checkTableQuery).bind(tabela[0]).all(); // Executa a consulta SQL
               
                   if (tableExists.length === 0) { // Se a tabela não existir, cria a tabela
-                    const colunas = Object.keys(tabela[1]).map(coluna => `${coluna} TEXT`).join(", ");
+                    const colunas = tabela[1].map(coluna => `${coluna} TEXT`).join(", ");
                     const createTableQuery = `
                       CREATE TABLE ${tabela[0]} (
                         id INTEGER PRIMARY KEY AUTOINCREMENT, // Criação de um campo 'id' como chave primária e autoincrementável
@@ -261,8 +279,8 @@ if(users === null && messageText == '/index' || users === null && messageText ==
                   }
               
                   // Prepara a consulta para inserir dados na tabela
-                  const colunas = Object.keys(tabela[1]).join(", ");
-                  const valores = Object.values(tabela[1]).map(() => '?').join(", "); // Usando placeholders ('?') para os valores
+                  const colunas = tabela[1]).join(", ");
+                  const valores = content.map(() => '?').join(", "); // Usando placeholders ('?') para os valores
               
                   // Comando SQL para inserção (não precisa se preocupar com o ID, o banco se encarrega disso)
                   const query = `
@@ -271,7 +289,7 @@ if(users === null && messageText == '/index' || users === null && messageText ==
                   `;
               
                   // Executa a inserção dos dados usando os valores fornecidos
-                  await _data.prepare(query).run(Object.values(tabela[1])); // Usa `Object.values` para passar os dados para os placeholders
+                  await _data.prepare(query).run(tabela[1]); // Usa `Object.values` para passar os dados para os placeholders
               
                   const sucesso = 'Salvo com sucesso!';
                   await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
@@ -356,6 +374,8 @@ async function recUser(userId, update, env) {
   
   async function images(update, fileName, env) {
     const BOT_TOKEN = env.bot_Token; // Substitua pelo seu token
+    const MEGA_EMAIL = env.mega_email; // E-mail do Mega.nz
+    const MEGA_PASSWORD = env.mega_password; // Senha do Mega.nz
 
     if (!update.message || !update.message.photo) {
         console.error("Nenhuma imagem recebida.");
@@ -382,26 +402,167 @@ async function recUser(userId, update, env) {
         // 2️⃣ Baixa a imagem do Telegram
         let imageResponse = await fetch(file_url);
         let imageBlob = await imageResponse.blob();
+        let buffer = Buffer.from(await imageBlob.arrayBuffer()); // Converte o blob para um buffer
 
-        // 3️⃣ Envia a imagem para o servidor via fetch()
-        let formData = new FormData();
-        formData.append("file", imageBlob, fileName);
+        // 3️⃣ Realiza o login no Mega.nz
+        const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD);
 
-        let uploadResponse = await fetch("/upload.php?name=" + encodeURIComponent(fileName), {
-            method: "POST",
-            body: formData
-        });
+        // 4️⃣ Envia a imagem para o Mega
+        const uploadResult = await uploadFileToMega(client, buffer, fileName);
 
-        let uploadResult = await uploadResponse.text();
-        console.log("Imagem salva:", uploadResult);
+        console.log("Imagem salva no Mega:", uploadResult);
 
-        return uploadResult; // Retorna a URL da imagem salva
+        return uploadResult; // Retorna a URL do arquivo carregado no Mega
 
     } catch (error) {
         console.error("Erro no processamento:", error);
         return null;
     }
 }
+
+// Função para realizar o login no Mega.nz
+async function loginToMega(email, password) {
+    const loginUrl = 'https://g.api.mega.nz/cs?id=0'; // URL para autenticação (Mega API)
+    const payload = {
+        "a": "us", // Ação de login
+        "user": email,
+        "password": password
+    };
+    
+    const response = await fetch(loginUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    
+    if (data.ts) {
+        // A autenticação foi bem-sucedida
+        return data;
+    } else {
+        throw new Error("Falha na autenticação.");
+    }
+}
+
+// Função principal que lida com o processamento de imagens recebidas do Telegram e envio para o Mega.nz
+async function images(update, fileName, env) {
+    const BOT_TOKEN = env.bot_Token; // Recupera o token do bot do Telegram da variável de ambiente
+    const MEGA_EMAIL = env.mega_email; // E-mail do Mega.nz da variável de ambiente
+    const MEGA_PASSWORD = env.mega_password; // Senha do Mega.nz da variável de ambiente
+
+    // Verifica se a mensagem contém uma foto
+    if (!update.message || !update.message.photo) {
+        console.error("Nenhuma imagem recebida.");
+        return null; // Retorna null se não houver imagem na mensagem
+    }
+
+    // Pega a última foto na lista (melhor qualidade)
+    let photos = update.message.photo;
+    let file_id = photos[photos.length - 1].file_id; // Obtém o file_id da última imagem na lista (melhor qualidade)
+
+    try {
+        // 1️⃣ Obtém a URL do arquivo usando a API do Telegram
+        let fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${file_id}`);
+        let fileData = await fileResponse.json(); // Converte a resposta em JSON
+
+        // Verifica se a resposta da API foi bem-sucedida
+        if (!fileData.ok) {
+            console.error("Erro ao obter o caminho do arquivo.");
+            return null; // Retorna null se não conseguir obter a URL do arquivo
+        }
+
+        // Extrai o caminho do arquivo da resposta
+        let file_path = fileData.result.file_path;
+        // Constroi a URL completa para o arquivo
+        let file_url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`;
+
+        // 2️⃣ Baixa a imagem do Telegram
+        let imageResponse = await fetch(file_url); // Faz a requisição para obter a imagem
+        let imageBlob = await imageResponse.blob(); // Converte a resposta em Blob (arquivo binário)
+        let buffer = Buffer.from(await imageBlob.arrayBuffer()); // Converte o Blob em um Buffer (usado para upload)
+
+        // 3️⃣ Realiza o login no Mega.nz
+        const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD); // Faz o login usando o e-mail e senha
+
+        // 4️⃣ Envia a imagem para o Mega
+        const uploadResult = await uploadFileToMega(client, buffer, fileName); // Faz o upload do arquivo para o Mega
+
+        // Exibe o link do arquivo carregado no Mega
+        console.log("Imagem salva no Mega:", uploadResult);
+
+        return uploadResult; // Retorna o link do arquivo no Mega.nz
+
+    } catch (error) {
+        // Captura qualquer erro durante o processo
+        console.error("Erro no processamento:", error);
+        return null; // Retorna null em caso de erro
+    }
+}
+
+// Função para realizar o login no Mega.nz e retornar os dados de autenticação
+async function loginToMega(email, password) {
+    const loginUrl = 'https://g.api.mega.nz/cs?id=0'; // URL de login da API do Mega.nz
+    const payload = {
+        "a": "us", // Ação de login (us) para autenticar o usuário
+        "user": email, // E-mail do Mega.nz
+        "password": password // Senha do Mega.nz
+    };
+    
+    // Faz uma requisição POST para o Mega API para realizar o login
+    const response = await fetch(loginUrl, {
+        method: 'POST', // Método POST para enviar dados
+        headers: {
+            'Content-Type': 'application/json' // Cabeçalho indicando que o corpo da requisição é JSON
+        },
+        body: JSON.stringify(payload) // Corpo da requisição (os dados de login)
+    });
+
+    const data = await response.json(); // Converte a resposta da requisição em JSON
+    
+    // Verifica se a resposta contém um timestamp, indicando que o login foi bem-sucedido
+    if (data.ts) {
+        return data; // Retorna os dados de autenticação (token e chave)
+    } else {
+        throw new Error("Falha na autenticação."); // Lança erro se o login falhar
+    }
+}
+
+// Função para fazer o upload de um arquivo para o Mega.nz
+async function uploadFileToMega(authData, fileBuffer, fileName) {
+    const uploadUrl = 'https://g.api.mega.nz/cs?id=0'; // URL de upload da API do Mega.nz
+    
+    // Monta o payload para enviar o arquivo (informações do arquivo e de autenticação)
+    const uploadPayload = {
+        "a": "up", // Ação de upload
+        "n": fileName, // Nome do arquivo a ser enviado
+        "s": fileBuffer.length, // Tamanho do arquivo (em bytes)
+        "t": authData.t, // Token de autenticação retornado no login
+        "k": authData.k // Chave de sessão retornada no login
+    };
+
+    // Faz a requisição POST para realizar o upload do arquivo
+    const uploadResponse = await fetch(uploadUrl, {
+        method: 'POST', // Método POST para enviar dados
+        headers: {
+            'Content-Type': 'application/json' // Cabeçalho indicando que o corpo da requisição é JSON
+        },
+        body: JSON.stringify(uploadPayload) // Corpo da requisição com os dados de upload
+    });
+
+    const uploadData = await uploadResponse.json(); // Converte a resposta da requisição em JSON
+    
+    // Verifica se o upload foi bem-sucedido (se "ok" estiver presente na resposta)
+    if (uploadData && uploadData.ok) {
+        return uploadData; // Retorna os dados de upload (incluindo o link do arquivo)
+    } else {
+        throw new Error("Erro no upload."); // Lança erro caso o upload falhe
+    }
+}
+
+
 
 async function normalize(str) {
   return str
