@@ -5,7 +5,6 @@ type = 'javascript'
 account_id = "448a5b0c80d31dbd28fe2e8afdd9a050"
 workers_dev = true  # Para rodar no domínio de workers-dev
 compatibility_date = "2024-02-18"  # Use a data atual
-node_compat = false
 main = "worker.js"  # Caminho correto para o seu script
 
 [build.upload]
