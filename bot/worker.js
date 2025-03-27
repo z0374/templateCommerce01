@@ -1,7 +1,8 @@
 export default { //Exporta as variáveis de ambientes
   async fetch(request, env, ctx) { //Faz a requisição asincrona das variaveis de ambiente e da requisição
   if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') === '5354wD0f0D0f054w705') { //Verifica se a requisição vem do bot do telegram
-   return handleRequest(request, env); //Chama a função que trata a requisição do telegram
+   await sendMessage('fetch OK',env);
+    return handleRequest(request, env); //Chama a função que trata a requisição do telegram
   }else if(request.headers.get('X-Page-Token')==='lrbb1lrp00wp1w3I1l70b4r8r570'){ //verifica se a página que esta solicitando esta autorizada a receber os dados
       //return handleJson(request, env);  //Chama a função que envia os dados para a hospedagem
   }else{ 
@@ -11,12 +12,16 @@ export default { //Exporta as variáveis de ambientes
 
 async function handleRequest(request, env) {  //Função que trata a requisição do Webhook
   await new Promise(resolve => setTimeout(resolve, 1000));  //Aguarda 1 segundo para começar a rodar o script
+  await sendMessage('promise OK',env);
   const url = new URL(request.url)|| null;  //Captura a url da requisição
   if (!url) { //Verifica se a url é válida
+    await sendMessage('URL fail',env);
     return new Response("URL inexistente", { status: 500 });  //Caso não seja válida retorna 'URL inesistente' e 'status:500'
   }else{ //Se URL for válida
     try{
+      await sendMessage('url OK',env);
       const update = await request.json();  //captura o Json da requisição
+      await sendMessage('request OK',env);
       const chatId = Number(update.message.chat.id);  //Captura o identificador do chat e define como number
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
@@ -24,6 +29,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       if (update.message.photo) {
         const photos = update.message.photo;
         let messageText = photos[photos.length - 1].file_id;
+        await sendMessage(messageText + ' OK',env);
     }else{let messageText = String(update.message.text) || '';}
 
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
