@@ -118,9 +118,9 @@ await processos(messageText);
 
                   case 'waiting_logo_cabecalho':
                     await sendMessage(messageText,env);
-					//const img = await images(request, 'logoDoCabeçalho', env); await sendMessage('mega - concluido',env);
-          //          const logo = ['logoDoCabeçalho', img, 'img'];
-					//const coluns = ['nome', 'arquivo', 'tipo']
+					          const img = await images(request, 'logoDoCabeçalho', env); await sendMessage('mega - concluido', env);
+                    const logo = ['logoDoCabeçalho', img, 'img'];
+					          const coluns = ['nome', 'arquivo', 'tipo']
                     //await dados('save',logo,['assets',logo],userId);  
                     userState.state = 'waiting_nome_cabecalho';	//userState.dados.push(logo);
                     await saveUserState(env, userId, userState);  
@@ -383,67 +383,107 @@ async function recUser(userId, update, env) {
       return { error: error.message }; // Retorna uma mensagem de erro
     }
   }
-// Função para realizar o login no Mega.nz e retornar os dados de autenticação
-async function loginToMega(email, password) {
+
+  async function loginToMega(email, password) {
     const loginUrl = 'https://g.api.mega.nz/cs?id=0'; // URL de login da API do Mega.nz
     const payload = {
         "a": "us", // Ação de login (us) para autenticar o usuário
         "user": email, // E-mail do Mega.nz
         "password": password // Senha do Mega.nz
     };
-    
-    // Faz uma requisição POST para o Mega API para realizar o login
+
     const response = await fetch(loginUrl, {
-        method: 'POST', // Método POST para enviar dados
+        method: 'POST',
         headers: {
-            'Content-Type': 'application/json' // Cabeçalho indicando que o corpo da requisição é JSON
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify(payload) // Corpo da requisição (os dados de login)
+        body: JSON.stringify(payload)
     });
 
-    const data = await response.json(); // Converte a resposta da requisição em JSON
-    
-    // Verifica se a resposta contém um timestamp, indicando que o login foi bem-sucedido
+    const data = await response.json();
     if (data.ts) {
-        return data; // Retorna os dados de autenticação (token e chave)
+        return data; // Retorna os dados de autenticação
     } else {
-        throw new Error("Falha na autenticação."); // Lança erro se o login falhar
+        throw new Error("Falha na autenticação.");
     }
 }
 
 // Função para fazer o upload de um arquivo para o Mega.nz
 async function uploadFileToMega(authData, fileBuffer, fileName) {
-    const uploadUrl = 'https://g.api.mega.nz/cs?id=0'; // URL de upload da API do Mega.nz
-    
-    // Monta o payload para enviar o arquivo (informações do arquivo e de autenticação)
+    const uploadUrl = 'https://g.api.mega.nz/cs?id=0';
+
     const uploadPayload = {
-        "a": "up", // Ação de upload
-        "n": fileName, // Nome do arquivo a ser enviado
-        "s": fileBuffer.length, // Tamanho do arquivo (em bytes)
-        "t": authData.t, // Token de autenticação retornado no login
-        "k": authData.k // Chave de sessão retornada no login
+        "a": "up",
+        "n": fileName,
+        "s": fileBuffer.length,
+        "t": authData.t,
+        "k": authData.k
     };
 
-    // Faz a requisição POST para realizar o upload do arquivo
     const uploadResponse = await fetch(uploadUrl, {
-        method: 'POST', // Método POST para enviar dados
+        method: 'POST',
         headers: {
-            'Content-Type': 'application/json' // Cabeçalho indicando que o corpo da requisição é JSON
+            'Content-Type': 'application/json'
         },
-        body: JSON.stringify(uploadPayload) // Corpo da requisição com os dados de upload
+        body: JSON.stringify(uploadPayload)
     });
 
-    const uploadData = await uploadResponse.json(); // Converte a resposta da requisição em JSON
-    
-    // Verifica se o upload foi bem-sucedido (se "ok" estiver presente na resposta)
+    const uploadData = await uploadResponse.json();
     if (uploadData && uploadData.ok) {
-        return uploadData; // Retorna os dados de upload (incluindo o link do arquivo)
+        // Gerar o link de download do arquivo
+        const fileLink = `https://mega.nz/file/${uploadData.n}`;
+        return fileLink; // Retorna o link de download
     } else {
-        throw new Error("Erro no upload."); // Lança erro caso o upload falhe
+        throw new Error("Erro no upload.");
     }
 }
 
+// Função para baixar a imagem do Telegram
+async function downloadImageFromTelegram(telegramBotToken, imageId) {
+    const url = `https://api.telegram.org/bot${telegramBotToken}/getFile?file_id=${imageId}`;
+    
+    // Obter informações do arquivo
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    if (data.ok) {
+        const filePath = data.result.file_path;
+        const fileUrl = `https://api.telegram.org/file/bot${telegramBotToken}/${filePath}`;
 
+        // Baixar o arquivo
+        const fileResponse = await fetch(fileUrl);
+        const fileBuffer = await fileResponse.arrayBuffer();
+        return new Uint8Array(fileBuffer); // Retorna o arquivo como um buffer de bytes
+    } else {
+        throw new Error("Erro ao obter arquivo do Telegram.");
+    }
+}
+
+// Função principal para o fluxo
+async function sendImageToMega(telegramBotToken, imageId, megaEmail, megaPassword) {
+    try {
+        // Passo 1: Baixar a imagem do Telegram
+        console.log("Baixando a imagem do Telegram...");
+        const imageBuffer = await downloadImageFromTelegram(telegramBotToken, imageId);
+        console.log("Imagem baixada com sucesso!");
+
+        // Passo 2: Login no Mega.nz
+        console.log("Realizando login no Mega...");
+        const authData = await loginToMega(megaEmail, megaPassword);
+        console.log("Login no Mega realizado com sucesso!");
+
+        // Passo 3: Upload da imagem para o Mega.nz
+        console.log("Fazendo o upload para o Mega...");
+        const fileLink = await uploadFileToMega(authData, imageBuffer, 'image_from_telegram.jpg');
+        console.log("Imagem enviada para o Mega com sucesso!");
+        console.log(`Link do arquivo no Mega: ${fileLink}`);
+        
+        return fileLink; // Retorna o link para ser usado futuramente
+    } catch (error) {
+        console.error("Erro:", error.message);
+        return null;
+    }
+}
 
 async function normalize(str) {
   return str
