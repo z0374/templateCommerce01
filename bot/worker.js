@@ -325,14 +325,14 @@ await processos(messageText);
 async function sendMessage(message, env) {
   await new Promise(resolve => setTimeout(resolve, 500));
   const mensagem = encodeURIComponent(message);
-  const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendMessage?chat_id=-4624902460&text=${mensagem}`;
+  const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendMessage?chat_id=-4774731816&text=${mensagem}`;
 
   try {
     const response = await fetch(telegramUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: -4624902460,
+        chat_id: -4774731816,
         text: message,
         parse_mode: "HTML",
       }),
