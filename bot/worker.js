@@ -89,7 +89,7 @@ await processos(messageText);
             userState.proces = messageText.toLowerCase(); //Define o processo do usuário para / _data
             userState.state = 'waiting_section'; //Define o status do usuário como 'waiting_comand'
             await saveUserState(env, userId, userState);  //Chama a função assincrona saveUserState com o env como parâmetro o identificador do usuário eo estado da seção
-            await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Cabecalho - /Apresentação - /Imagens - /Horários - /usuários - /configuração\n\n /ver_meu_ _data - /encerrar`, env); //Saúda o usuário é lista as tarefas que ele pode fazer com o BOT
+            await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Cabecalho - /Apresentacao - /Imagens - /Horarios - /usuarios - /configuracao\n\n /ver_dados_da_pagina - /encerrar`, env); //Saúda o usuário é lista as tarefas que ele pode fazer com o BOT
             return new Response('Aguardando comando',{status:200}); //retorna a mensagem 'Aguardando comando' com status:200 e finaliza o script
         
             default:  //Caso não seja nenhuma das chaves anteriores passa para as chaves de seção do usuário
@@ -101,7 +101,7 @@ await processos(messageText);
                   case 'waiting_section_cabecalho':
                     userState.state = 'waiting_logo_cabecalho';
                     await saveUserState(env, userId, userState);
-                    await sendMessage(`Certo sr. ${userName}!\n Agora me envie a imagem da logo da sua empresa.:`,env);
+                    await sendMessage(`Saudações sr. ${userName}!\n Vamos começar a configurar o cabeçalho da sua página web.\nPor favor me envie a imagem da logo da sua organização.:`,env);
                     break;
 
                   case 'waiting_logo_cabecalho':
