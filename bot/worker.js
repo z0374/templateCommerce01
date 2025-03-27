@@ -20,15 +20,15 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const chatId = Number(update.message.chat.id);  //Captura o identificador do chat e define como number
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
-      let messageText = String(update.message.text) || '';  //captura o texto da mensagem do emissor e define como String
+        //captura o texto da mensagem do emissor e define como String
       if (update.message.photo) {
         const photos = update.message.photo;
-        const file_id = photos[photos.length - 1].file_id;
-    }
+        let messageText = photos[photos.length - 1].file_id;
+    }else{let messageText = String(update.message.text) || '';}
 
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
-    //await sendMessage('log1',env);
+    await sendMessage('log1',env);
     if (!userState) { //Verifica se o estado do usuário existe
       userState = { //se não existir cria o estado do usuário
         proces: String(messageText).toLowerCase(),  //salva o processo iniciado no bot
@@ -40,7 +40,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
         procesCont:0  //contador de processos em execução
       };
     }
-    //await sendMessage('log2',env);
+   await sendMessage('log2',env);
 /*
 if(users === null && messageText == '/index' || users === null && messageText == '/index'){	//Verifica se o usuário ja existe.
 	userState.state='waiting_'+messageText;	//Se não existir inicia o processo de criação
