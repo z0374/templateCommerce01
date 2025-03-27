@@ -24,7 +24,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
    
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
-    await sendMessage('log1',env);
+    //await sendMessage('log1',env);
     if (!userState) { //Verifica se o estado do usuário existe
       userState = { //se não existir cria o estado do usuário
         proces: String(messageText).toLowerCase(),  //salva o processo iniciado no bot
@@ -36,7 +36,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
         procesCont:0  //contador de processos em execução
       };
     }
-    await sendMessage('log2',env);
+    //await sendMessage('log2',env);
 /*
 if(users === null && messageText == '/index' || users === null && messageText == '/index'){	//Verifica se o usuário ja existe.
 	userState.state='waiting_'+messageText;	//Se não existir inicia o processo de criação
@@ -49,13 +49,13 @@ await processos(messageText);
     async function processos(messageText){  //Define a função processos com o texto da mensagem como parâmetro
       if(userState.procesCont>3){userState=null; await saveUserState(env, userId, userState);return new Response('Falha na requisição');} //Verifica se a quantidade de processos é maior que 3. Se for falha a requisição
       else{userState.procesCont++;} //Se não for adiciona 1 ao contador de processos
-      await sendMessage('log3',env);
+      //await sendMessage('log3',env);
       if(userState!==null || messageText!=='') {  //verifica se o estado do usuário e nulo ou se o texto da mensagem é vazio
         if(userState.state.includes("waiting_section") || userState.state.includes("waiting_comand")){  //Verifica se o estado do usuário é waiting_section ou waiting_comand
           userState.state += '_' + await normalize(messageText);  //Adiciona a mensagem do texto normalizada ao final do estado do usuário
           await saveUserState(env, userId, userState);  //Salva o estado do usuário usando a função saveUserState com a variável env como parâmetro o identificador do usuário eo array do userState.
         }
-        await sendMessage('log4',env);
+        //await sendMessage('log4',env);
         switch(messageText.toLowerCase()){  //abre uma chave passando a mensagem em minúsculo
           case '/encerrar': //caso o comando for /encerrar
             userState = null  //define o userState como nulo
@@ -70,7 +70,7 @@ await processos(messageText);
               /comandos - Lista de comandos do bot.
               /ajuda - Ajuda do bot.
               /portal - Adiciona um novo link ao portal.
-              / _data - Abre a edição do  _data online.
+              /index - Abre a edição do  index.
             `;  //variável com a lista de comandos do bot
               await sendMessage(list, env); //Envia para o chat uma mensagem com a lista de comandos
               return new Response('Comandos enviados!',{status:200});  //Retorna como resposta Comandos enviados! com status:200
@@ -84,7 +84,7 @@ await processos(messageText);
               await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Adicionar_link - /Editar_link\n /Remover_link - /Deletar_link\n\n /ver_meu_portal --- /encerrar`,env);
               break;
 
-          case '/index':  //caso o comando for / _data
+          case '/index':  //caso o comando for /index
             userState.procesCont=0; //zera o contador do processo
             userState.proces = messageText.toLowerCase(); //Define o processo do usuário para / _data
             userState.state = 'waiting_section'; //Define o status do usuário como 'waiting_comand'
