@@ -105,7 +105,7 @@ await processos(messageText);
                     break;
 
                   case 'waiting_logo_cabecalho':
-					const img = await images(request, 'logoDoCabeçalho', env);
+					const img = await images(request, 'logoDoCabeçalho', env); await sendMessage('mega - concluido',env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					const coluns = ['nome', 'arquivo', 'tipo']
                     await dados('save',logo,['assets',logo],userId);  
