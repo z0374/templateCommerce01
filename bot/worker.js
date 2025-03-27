@@ -30,7 +30,8 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
         const photos = update.message.photo;
         let messageText = photos[photos.length - 1].file_id;
         await sendMessage(messageText + ' OK',env);
-    }else{let messageText = String(update.message.text || '');}//captura o texto da mensagem do emissor e define como String
+    }
+let messageText = String(update.message.text);    //captura o texto da mensagem do emissor e define como String
 
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
