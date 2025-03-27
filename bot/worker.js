@@ -33,7 +33,8 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
         await sendMessage(messageText + ' OK', env);  // Send the file_id with "OK"
     }else{
         const messageText = String(update.message.text);    //captura o texto da mensagem do emissor e define como String
-}
+      }
+
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
     await sendMessage('log1',env);
