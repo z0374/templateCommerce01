@@ -38,17 +38,17 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
     await sendMessage('log1',env);
-    if (!userState) { //Verifica se o estado do usuário existe
-      userState = { //se não existir cria o estado do usuário
-        proces: String(messageText).toLowerCase(),  //salva o processo iniciado no bot
-        pin:'naoDefinido', //recebe o pin, valor padão null
-        state: String('').toLowerCase(),  //salva o estado do usuário na seção do bot
-        titulo: String(''), //salva o conteúdo da seção iniciada
-        texto: String(''),  //salva o conteúdo da seção iniciada
-        select: [], //salva os dados selecionados
-        procesCont:0  //contador de processos em execução
-      };
-    }
+      if (!userState) { //Verifica se o estado do usuário existe
+          userState = { //se não existir cria o estado do usuário
+          proces: String(messageText).toLowerCase(),  //salva o processo iniciado no bot
+          pin:'naoDefinido', //recebe o pin, valor padão null
+          state: String('').toLowerCase(),  //salva o estado do usuário na seção do bot
+          titulo: String(''), //salva o conteúdo da seção iniciada
+          texto: String(''),  //salva o conteúdo da seção iniciada
+          select: [], //salva os dados selecionados
+          procesCont:0  //contador de processos em execução
+        };
+      }
    await sendMessage('log2', env);
 /*
 if(users === null && messageText == '/index' || users === null && messageText == '/index'){	//Verifica se o usuário ja existe.
