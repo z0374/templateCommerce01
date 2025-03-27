@@ -28,10 +28,11 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
         
-      if (update.message.photo){ await sendMessage('conain image',env);
+      if (update.message.photo) {
+        await sendMessage('Contain image', env);  // Corrected typo
         const photos = update.message.photo;
-        let messageText = photos[photos.length - 1].file_id;
-        await sendMessage(messageText + ' OK',env);
+        let messageText = photos[photos.length - 1].file_id;  // Get the highest quality photo
+        await sendMessage(messageText + ' OK', env);  // Send the file_id with "OK"
     }
 let messageText = String(update.message.text);    //captura o texto da mensagem do emissor e define como String
 
@@ -49,7 +50,7 @@ let messageText = String(update.message.text);    //captura o texto da mensagem 
         procesCont:0  //contador de processos em execução
       };
     }
-   await sendMessage('log2',env);
+   await sendMessage('log2', env);
 /*
 if(users === null && messageText == '/index' || users === null && messageText == '/index'){	//Verifica se o usuário ja existe.
 	userState.state='waiting_'+messageText;	//Se não existir inicia o processo de criação
