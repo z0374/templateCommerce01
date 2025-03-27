@@ -29,11 +29,11 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       if (update.message.photo) {
         await sendMessage('Contain image', env);  // Corrected typo
         const photos = update.message.photo;
-        let messageText = photos[photos.length - 1].file_id;  // Get the highest quality photo
+        const messageText = photos[photos.length - 1].file_id;  // Get the highest quality photo
         await sendMessage(messageText + ' OK', env);  // Send the file_id with "OK"
-    }
-let messageText = String(update.message.text);    //captura o texto da mensagem do emissor e define como String
-
+    }else{
+        const messageText = String(update.message.text);    //captura o texto da mensagem do emissor e define como String
+}
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
     await sendMessage('log1',env);
