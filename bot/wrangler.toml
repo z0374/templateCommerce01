@@ -1,4 +1,4 @@
-name = "template_comerce01"
+name = 'template-commerce01'
 minify = false
 type = 'javascript'
 
