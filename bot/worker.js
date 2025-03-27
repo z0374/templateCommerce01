@@ -20,7 +20,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const chatId = Number(update.message.chat.id);  //Captura o identificador do chat e define como number
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
-      let messageText = String(update.message.text);  //captura o texto da mensagem do emissor e define como String
+      let messageText = String(update.message.text) || '';  //captura o texto da mensagem do emissor e define como String
       if (update.message.photo) {
         const photos = update.message.photo;
         const file_id = photos[photos.length - 1].file_id;
