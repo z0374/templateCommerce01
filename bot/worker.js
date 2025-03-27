@@ -22,8 +22,8 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
       let messageText = String(update.message.text);  //captura o texto da mensagem do emissor e define como String
       if (update.message.photo) {
-        let photos = update.message.photo;
-        let file_id = photos[photos.length - 1].file_id;
+        const photos = update.message.photo;
+        const file_id = photos[photos.length - 1].file_id;
     }
 
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
@@ -109,11 +109,11 @@ await processos(messageText);
                     break;
 
                   case 'waiting_logo_cabecalho':
-                    await sendMessage('log1',env);
-					const img = await images(request, 'logoDoCabeçalho', env); await sendMessage('mega - concluido',env);
-                    const logo = ['logoDoCabeçalho', img, 'img'];
-					const coluns = ['nome', 'arquivo', 'tipo']
-                    await dados('save',logo,['assets',logo],userId);  
+                    await sendMessage(file_id,env);
+					//const img = await images(request, 'logoDoCabeçalho', env); await sendMessage('mega - concluido',env);
+          //          const logo = ['logoDoCabeçalho', img, 'img'];
+					//const coluns = ['nome', 'arquivo', 'tipo']
+                    //await dados('save',logo,['assets',logo],userId);  
                     userState.state = 'waiting_nome_cabecalho';	userState.dados.push(logo);
                     await saveUserState(env, userId, userState);  
                     await sendMessage(`Certo sr. ${userName}, vamos continuar com a configuração do cabeçalho do site!\n Me informe o nome da sua impresa.:`,env);
@@ -375,75 +375,6 @@ async function recUser(userId, update, env) {
       return { error: error.message }; // Retorna uma mensagem de erro
     }
   }
-
-// Função principal que lida com o processamento de imagens recebidas do Telegram e envio para o Mega.nz
-async function images(file_id, fileName, env) {
-    const BOT_TOKEN = env.bot_Token;
-    const MEGA_EMAIL = env.mega_email;
-    const MEGA_PASSWORD = env.mega_password;
-
-    await sendMessage('log1: Iniciando processamento da imagem.', env);
-
-    if (!file_id) {
-        await sendMessage('log2: Erro - file_id não fornecido.', env);
-        return null;
-    }
-
-    try {
-        // 1️⃣ Obtém a URL do arquivo usando a API do Telegram
-        await sendMessage('log3: Obtendo URL do arquivo no Telegram.', env);
-        let fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${file_id}`);
-        let fileData = await fileResponse.json();
-
-        if (!fileData.ok || !fileData.result?.file_path) {
-            await sendMessage(`log4: Erro ao obter a URL do arquivo: ${JSON.stringify(fileData)}`, env);
-            return null;
-        }
-
-        let file_path = fileData.result.file_path;
-        let file_url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`;
-
-        await sendMessage(`log5: URL obtida: ${file_url}`, env);
-
-        // 2️⃣ Baixa a imagem do Telegram
-        let imageResponse = await fetch(file_url);
-
-        if (!imageResponse.ok) {
-            await sendMessage(`log6: Erro ao baixar a imagem. Status: ${imageResponse.status}`, env);
-            return null;
-        }
-
-        let imageBlob = await imageResponse.arrayBuffer();
-
-        await sendMessage('log7: Imagem baixada com sucesso.', env);
-
-        // 3️⃣ Realiza o login no Mega.nz
-        await sendMessage('log8: Fazendo login no Mega.nz.', env);
-        const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD);
-
-        if (!client) {
-            await sendMessage('log9: Erro no login do Mega.nz.', env);
-            return null;
-        }
-
-        // 4️⃣ Envia a imagem para o Mega
-        await sendMessage('log10: Enviando imagem para o Mega.nz.', env);
-        const uploadResult = await uploadFileToMega(client, imageBlob, fileName);
-
-        if (!uploadResult) {
-            await sendMessage('log11: Erro no upload para o Mega.nz.', env);
-            return null;
-        }
-
-        await sendMessage(`log12: Imagem salva no Mega: ${uploadResult}`, env);
-
-        return uploadResult;
-
-    } catch (error) {
-        await sendMessage(`logError: ${error.message}`, env);
-        return null;
-    }
-}
 // Função para realizar o login no Mega.nz e retornar os dados de autenticação
 async function loginToMega(email, password) {
     const loginUrl = 'https://g.api.mega.nz/cs?id=0'; // URL de login da API do Mega.nz
