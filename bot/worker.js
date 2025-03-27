@@ -378,89 +378,72 @@ async function recUser(userId, update, env) {
 
 // Função principal que lida com o processamento de imagens recebidas do Telegram e envio para o Mega.nz
 async function images(file_id, fileName, env) {
-  const BOT_TOKEN = env.bot_Token;
-  const MEGA_EMAIL = env.mega_email;
-  const MEGA_PASSWORD = env.mega_password;
+    const BOT_TOKEN = env.bot_Token;
+    const MEGA_EMAIL = env.mega_email;
+    const MEGA_PASSWORD = env.mega_password;
 
-  await sendMessage('log1: Iniciando processamento da imagem.', env);
-  
-  if (!file_id) {
-      await sendMessage('log2: Erro - file_id não fornecido.', env);
-      return null;
-  }
+    await sendMessage('log1: Iniciando processamento da imagem.', env);
 
-  try {
-      // 1️⃣ Obtém a URL do arquivo usando a API do Telegram
-      await sendMessage('log3: Obtendo URL do arquivo no Telegram.', env);
-      let fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${file_id}`);
-      let fileData = await fileResponse.json();
+    if (!file_id) {
+        await sendMessage('log2: Erro - file_id não fornecido.', env);
+        return null;
+    }
 
-      if (!fileData.ok || !fileData.result?.file_path) {
-          await sendMessage(`log4: Erro ao obter a URL do arquivo: ${JSON.stringify(fileData)}`, env);
-          return null;
-      }
+    try {
+        // 1️⃣ Obtém a URL do arquivo usando a API do Telegram
+        await sendMessage('log3: Obtendo URL do arquivo no Telegram.', env);
+        let fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${file_id}`);
+        let fileData = await fileResponse.json();
 
-      let file_path = fileData.result.file_path;
-      let file_url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`;
+        if (!fileData.ok || !fileData.result?.file_path) {
+            await sendMessage(`log4: Erro ao obter a URL do arquivo: ${JSON.stringify(fileData)}`, env);
+            return null;
+        }
 
-      await sendMessage(`log5: URL obtida: ${file_url}`, env);
+        let file_path = fileData.result.file_path;
+        let file_url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`;
 
-      // 2️⃣ Baixa a imagem do Telegram
-      let imageResponse = await fetch(file_url);
+        await sendMessage(`log5: URL obtida: ${file_url}`, env);
 
-      if (!imageResponse.ok) {
-          await sendMessage(`log6: Erro ao baixar a imagem. Status: ${imageResponse.status}`, env);
-          return null;
-      }
+        // 2️⃣ Baixa a imagem do Telegram
+        let imageResponse = await fetch(file_url);
 
-      let imageBlob = await imageResponse.arrayBuffer();
+        if (!imageResponse.ok) {
+            await sendMessage(`log6: Erro ao baixar a imagem. Status: ${imageResponse.status}`, env);
+            return null;
+        }
 
-      await sendMessage('log7: Imagem baixada com sucesso.', env);
+        let imageBlob = await imageResponse.arrayBuffer();
 
-      // 3️⃣ Realiza o login no Mega.nz
-      await sendMessage('log8: Fazendo login no Mega.nz.', env);
-      const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD);
+        await sendMessage('log7: Imagem baixada com sucesso.', env);
 
-      if (!client) {
-          await sendMessage('log9: Erro no login do Mega.nz.', env);
-          return null;
-      }
+        // 3️⃣ Realiza o login no Mega.nz
+        await sendMessage('log8: Fazendo login no Mega.nz.', env);
+        const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD);
 
-      // 4️⃣ Envia a imagem para o Mega
-      await sendMessage('log10: Enviando imagem para o Mega.nz.', env);
-      const uploadResult = await uploadFileToMega(client, imageBlob, fileName);
+        if (!client) {
+            await sendMessage('log9: Erro no login do Mega.nz.', env);
+            return null;
+        }
 
-      if (!uploadResult) {
-          await sendMessage('log11: Erro no upload para o Mega.nz.', env);
-          return null;
-      }
+        // 4️⃣ Envia a imagem para o Mega
+        await sendMessage('log10: Enviando imagem para o Mega.nz.', env);
+        const uploadResult = await uploadFileToMega(client, imageBlob, fileName);
 
-      await sendMessage(`log12: Imagem salva no Mega: ${uploadResult}`, env);
+        if (!uploadResult) {
+            await sendMessage('log11: Erro no upload para o Mega.nz.', env);
+            return null;
+        }
 
-      return uploadResult;
+        await sendMessage(`log12: Imagem salva no Mega: ${uploadResult}`, env);
 
-  } catch (error) {
-      await sendMessage(`logError: ${error.message}`, env);
-      return null;
-  }
+        return uploadResult;
+
+    } catch (error) {
+        await sendMessage(`logError: ${error.message}`, env);
+        return null;
+    }
 }
-
-// Função para enviar logs para um chat no Telegram
-async function sendMessage(text, env) {
-  const chat_id = env.TELEGRAM_CHAT_ID;
-  const url = `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`;
-
-  await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id, text }),
-  });
-}
-
-
-
-
-
 // Função para realizar o login no Mega.nz e retornar os dados de autenticação
 async function loginToMega(email, password) {
     const loginUrl = 'https://g.api.mega.nz/cs?id=0'; // URL de login da API do Mega.nz
