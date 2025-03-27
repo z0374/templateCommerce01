@@ -53,13 +53,13 @@ await processos(messageText);
     async function processos(messageText){  //Define a função processos com o texto da mensagem como parâmetro
       if(userState.procesCont>3){userState=null; await saveUserState(env, userId, userState);return new Response('Falha na requisição');} //Verifica se a quantidade de processos é maior que 3. Se for falha a requisição
       else{userState.procesCont++;} //Se não for adiciona 1 ao contador de processos
-      //await sendMessage('log3',env);
+      await sendMessage('log3',env);
       if(userState!==null || messageText!=='') {  //verifica se o estado do usuário e nulo ou se o texto da mensagem é vazio
         if(userState.state.includes("waiting_section") || userState.state.includes("waiting_comand")){  //Verifica se o estado do usuário é waiting_section ou waiting_comand
           userState.state += '_' + await normalize(messageText);  //Adiciona a mensagem do texto normalizada ao final do estado do usuário
           await saveUserState(env, userId, userState);  //Salva o estado do usuário usando a função saveUserState com a variável env como parâmetro o identificador do usuário eo array do userState.
         }
-        //await sendMessage('log4',env);
+        await sendMessage('log4',env);
         switch(messageText.toLowerCase()){  //abre uma chave passando a mensagem em minúsculo
           case '/encerrar': //caso o comando for /encerrar
             userState = null  //define o userState como nulo
