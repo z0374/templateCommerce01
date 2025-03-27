@@ -21,7 +21,11 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
       let messageText = String(update.message.text);  //captura o texto da mensagem do emissor e define como String
-   
+      if (update.message.photo) {
+        let photos = update.message.photo;
+        let file_id = photos[photos.length - 1].file_id;
+    }
+
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
     //await sendMessage('log1',env);
@@ -86,7 +90,7 @@ await processos(messageText);
 
           case '/index':  //caso o comando for /index
             userState.procesCont=0; //zera o contador do processo
-            userState.proces = messageText.toLowerCase(); //Define o processo do usuário para / _data
+            userState.proces = messageText.toLowerCase(); //Define o processo do usuário para / _data 
             userState.state = 'waiting_section'; //Define o status do usuário como 'waiting_comand'
             await saveUserState(env, userId, userState);  //Chama a função assincrona saveUserState com o env como parâmetro o identificador do usuário eo estado da seção
             await sendMessage(`Olá ${userName}! Como posso ajudar?\n /Cabecalho - /Apresentacao - /Imagens - /Horarios - /usuarios - /configuracao\n\n /ver_dados_da_pagina - /encerrar`, env); //Saúda o usuário é lista as tarefas que ele pode fazer com o BOT
@@ -373,81 +377,65 @@ async function recUser(userId, update, env) {
   }
 
 // Função principal que lida com o processamento de imagens recebidas do Telegram e envio para o Mega.nz
-async function images(update, fileName, env) {
+async function images(file_id, fileName, env) {
   const BOT_TOKEN = env.bot_Token;
   const MEGA_EMAIL = env.mega_email;
   const MEGA_PASSWORD = env.mega_password;
 
   await sendMessage('log1: Iniciando processamento da imagem.', env);
-
-  // Verifica se a mensagem contém uma foto
-  if (!update.message) {
-      await sendMessage('log2: Erro - update.message está indefinido.', env);
-      return null;
-  }
-  if (!update.message.photo) {
-      await sendMessage('log3: Nenhuma imagem encontrada na mensagem.', env);
-      return null;
-  }
-
-  await sendMessage('log4: Imagem detectada na mensagem.', env);
-
-  let photos = update.message.photo;
-  let file_id = photos[photos.length - 1]?.file_id; // Verifica se há um file_id válido
-
+  
   if (!file_id) {
-      await sendMessage('log5: Erro - Nenhum file_id encontrado.', env);
+      await sendMessage('log2: Erro - file_id não fornecido.', env);
       return null;
   }
 
   try {
       // 1️⃣ Obtém a URL do arquivo usando a API do Telegram
-      await sendMessage('log6: Obtendo URL do arquivo no Telegram.', env);
+      await sendMessage('log3: Obtendo URL do arquivo no Telegram.', env);
       let fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${file_id}`);
       let fileData = await fileResponse.json();
 
       if (!fileData.ok || !fileData.result?.file_path) {
-          await sendMessage(`log7: Erro ao obter a URL do arquivo: ${JSON.stringify(fileData)}`, env);
+          await sendMessage(`log4: Erro ao obter a URL do arquivo: ${JSON.stringify(fileData)}`, env);
           return null;
       }
 
       let file_path = fileData.result.file_path;
       let file_url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`;
 
-      await sendMessage(`log8: URL obtida: ${file_url}`, env);
+      await sendMessage(`log5: URL obtida: ${file_url}`, env);
 
       // 2️⃣ Baixa a imagem do Telegram
       let imageResponse = await fetch(file_url);
 
       if (!imageResponse.ok) {
-          await sendMessage(`log9: Erro ao baixar a imagem. Status: ${imageResponse.status}`, env);
+          await sendMessage(`log6: Erro ao baixar a imagem. Status: ${imageResponse.status}`, env);
           return null;
       }
 
-      let imageBlob = await imageResponse.blob();
-      let buffer = await imageBlob.arrayBuffer();
+      let imageBlob = await imageResponse.arrayBuffer();
 
-      await sendMessage('log10: Imagem baixada com sucesso.', env);
+      await sendMessage('log7: Imagem baixada com sucesso.', env);
 
       // 3️⃣ Realiza o login no Mega.nz
-      await sendMessage('log11: Fazendo login no Mega.nz.', env);
+      await sendMessage('log8: Fazendo login no Mega.nz.', env);
       const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD);
 
       if (!client) {
-          await sendMessage('log12: Erro no login do Mega.nz.', env);
+          await sendMessage('log9: Erro no login do Mega.nz.', env);
           return null;
       }
 
       // 4️⃣ Envia a imagem para o Mega
-      await sendMessage('log13: Enviando imagem para o Mega.nz.', env);
-      const uploadResult = await uploadFileToMega(client, buffer, fileName);
+      await sendMessage('log10: Enviando imagem para o Mega.nz.', env);
+      const uploadResult = await uploadFileToMega(client, imageBlob, fileName);
 
       if (!uploadResult) {
-          await sendMessage('log14: Erro no upload para o Mega.nz.', env);
+          await sendMessage('log11: Erro no upload para o Mega.nz.', env);
           return null;
       }
 
-      await sendMessage(`log15: Imagem salva no Mega: ${uploadResult}`, env);
+      await sendMessage(`log12: Imagem salva no Mega: ${uploadResult}`, env);
 
       return uploadResult;
 
@@ -456,6 +444,19 @@ async function images(update, fileName, env) {
       return null;
   }
 }
+
+// Função para enviar logs para um chat no Telegram
+async function sendMessage(text, env) {
+  const chat_id = env.TELEGRAM_CHAT_ID;
+  const url = `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`;
+
+  await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id, text }),
+  });
+}
+
 
 
 
