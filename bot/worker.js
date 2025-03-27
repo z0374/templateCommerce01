@@ -25,12 +25,12 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const chatId = Number(update.message.chat.id);  //Captura o identificador do chat e define como number
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
-        //captura o texto da mensagem do emissor e define como String
-      if (update.message.photo) {
+        
+      if (update.message.photo){
         const photos = update.message.photo;
         let messageText = photos[photos.length - 1].file_id;
         await sendMessage(messageText + ' OK',env);
-    }else{let messageText = String(update.message.text) || '';}
+    }else{let messageText = String(update.message.text || '');}//captura o texto da mensagem do emissor e define como String
 
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
