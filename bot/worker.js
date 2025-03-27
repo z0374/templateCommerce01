@@ -374,58 +374,59 @@ async function recUser(userId, update, env) {
 
 // Função principal que lida com o processamento de imagens recebidas do Telegram e envio para o Mega.nz
 async function images(update, fileName, env) {
-    const BOT_TOKEN = env.bot_Token; // Recupera o token do bot do Telegram da variável de ambiente
-    const MEGA_EMAIL = env.mega_email; // E-mail do Mega.nz da variável de ambiente
-    const MEGA_PASSWORD = env.mega_password; // Senha do Mega.nz da variável de ambiente
+  const BOT_TOKEN = env.bot_Token; // Recupera o token do bot do Telegram da variável de ambiente
+  const MEGA_EMAIL = env.mega_email; // E-mail do Mega.nz da variável de ambiente
+  const MEGA_PASSWORD = env.mega_password; // Senha do Mega.nz da variável de ambiente
 
-    // Verifica se a mensagem contém uma foto
-    if (!update.message || !update.message.photo) {
-        console.error("Nenhuma imagem recebida.");
-        return null; // Retorna null se não houver imagem na mensagem
-    }
+  // Verifica se a mensagem contém uma foto
+  if (!update.message || !update.message.photo) {
+      console.error("Nenhuma imagem recebida.");
+      return null; // Retorna null se não houver imagem na mensagem
+  }
 
-    // Pega a última foto na lista (melhor qualidade)
-    let photos = update.message.photo;
-    let file_id = photos[photos.length - 1].file_id; // Obtém o file_id da última imagem na lista (melhor qualidade)
+  // Pega a última foto na lista (melhor qualidade)
+  let photos = update.message.photo;
+  let file_id = photos[photos.length - 1].file_id; // Obtém o file_id da última imagem na lista (melhor qualidade)
 
-    try {
-        // 1️⃣ Obtém a URL do arquivo usando a API do Telegram
-        let fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${file_id}`);
-        let fileData = await fileResponse.json(); // Converte a resposta em JSON
+  try {
+      // 1️⃣ Obtém a URL do arquivo usando a API do Telegram
+      let fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${file_id}`);
+      let fileData = await fileResponse.json(); // Converte a resposta em JSON
 
-        // Verifica se a resposta da API foi bem-sucedida
-        if (!fileData.ok) {
-            console.error("Erro ao obter o caminho do arquivo.");
-            return null; // Retorna null se não conseguir obter a URL do arquivo
-        }
+      // Verifica se a resposta da API foi bem-sucedida
+      if (!fileData.ok) {
+          console.error("Erro ao obter o caminho do arquivo.");
+          return null; // Retorna null se não conseguir obter a URL do arquivo
+      }
 
-        // Extrai o caminho do arquivo da resposta
-        let file_path = fileData.result.file_path;
-        // Constroi a URL completa para o arquivo
-        let file_url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`;
+      // Extrai o caminho do arquivo da resposta
+      let file_path = fileData.result.file_path;
+      // Constroi a URL completa para o arquivo
+      let file_url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`;
 
-        // 2️⃣ Baixa a imagem do Telegram
-        let imageResponse = await fetch(file_url); // Faz a requisição para obter a imagem
-        let imageBlob = await imageResponse.blob(); // Converte a resposta em Blob (arquivo binário)
-        let buffer = Buffer.from(await imageBlob.arrayBuffer()); // Converte o Blob em um Buffer (usado para upload)
+      // 2️⃣ Baixa a imagem do Telegram
+      let imageResponse = await fetch(file_url); // Faz a requisição para obter a imagem
+      let imageBlob = await imageResponse.blob(); // Converte a resposta em Blob (arquivo binário)
+      let buffer = await imageBlob.arrayBuffer(); // Usa arrayBuffer diretamente no lugar do Buffer
 
-        // 3️⃣ Realiza o login no Mega.nz
-        const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD); // Faz o login usando o e-mail e senha
+      // 3️⃣ Realiza o login no Mega.nz
+      const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD); // Faz o login usando o e-mail e senha
 
-        // 4️⃣ Envia a imagem para o Mega
-        const uploadResult = await uploadFileToMega(client, buffer, fileName); // Faz o upload do arquivo para o Mega
+      // 4️⃣ Envia a imagem para o Mega
+      const uploadResult = await uploadFileToMega(client, buffer, fileName); // Faz o upload do arquivo para o Mega
 
-        // Exibe o link do arquivo carregado no Mega
-        console.log("Imagem salva no Mega:", uploadResult);
+      // Exibe o link do arquivo carregado no Mega
+      console.log("Imagem salva no Mega:", uploadResult);
 
-        return uploadResult; // Retorna o link do arquivo no Mega.nz
+      return uploadResult; // Retorna o link do arquivo no Mega.nz
 
-    } catch (error) {
-        // Captura qualquer erro durante o processo
-        console.error("Erro no processamento:", error);
-        return null; // Retorna null em caso de erro
-    }
+  } catch (error) {
+      // Captura qualquer erro durante o processo
+      console.error("Erro no processamento:", error);
+      return null; // Retorna null em caso de erro
+  }
 }
+
 
 // Função para realizar o login no Mega.nz e retornar os dados de autenticação
 async function loginToMega(email, password) {
