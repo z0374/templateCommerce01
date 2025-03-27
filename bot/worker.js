@@ -105,6 +105,7 @@ await processos(messageText);
                     break;
 
                   case 'waiting_logo_cabecalho':
+                    await sendMessage('log1',env);
 					const img = await images(request, 'logoDoCabeçalho', env); await sendMessage('mega - concluido',env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					const coluns = ['nome', 'arquivo', 'tipo']
@@ -141,8 +142,7 @@ await processos(messageText);
         }
         return new Response('OK');
     }else{
-      userState = null;
-      await saveUserState(env, userId, userState); await sendMessage('Estado do usuário inesistente ou mensagem',env)
+      await saveUserState(env, userId, null); await sendMessage('Estado do usuário inesistente ou mensagem',env)
           return new Response('Estado do usuário inesistente',{status:500});
         }
 	
