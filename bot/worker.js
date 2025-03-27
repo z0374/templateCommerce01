@@ -378,11 +378,16 @@ async function images(update, fileName, env) {
   const MEGA_EMAIL = env.mega_email; // E-mail do Mega.nz da variável de ambiente
   const MEGA_PASSWORD = env.mega_password; // Senha do Mega.nz da variável de ambiente
 
+  await sendMessage('log1: Iniciando processamento da imagem.', env);
+
   // Verifica se a mensagem contém uma foto
   if (!update.message || !update.message.photo) {
       console.error("Nenhuma imagem recebida.");
+      await sendMessage('log2: Nenhuma imagem recebida.', env);
       return null; // Retorna null se não houver imagem na mensagem
   }
+
+  await sendMessage('log3: Imagem detectada na mensagem.', env);
 
   // Pega a última foto na lista (melhor qualidade)
   let photos = update.message.photo;
@@ -390,42 +395,52 @@ async function images(update, fileName, env) {
 
   try {
       // 1️⃣ Obtém a URL do arquivo usando a API do Telegram
+      await sendMessage('log4: Obtendo URL do arquivo no Telegram.', env);
       let fileResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${file_id}`);
       let fileData = await fileResponse.json(); // Converte a resposta em JSON
 
       // Verifica se a resposta da API foi bem-sucedida
       if (!fileData.ok) {
           console.error("Erro ao obter o caminho do arquivo.");
+          await sendMessage('log5: Erro ao obter o caminho do arquivo.', env);
           return null; // Retorna null se não conseguir obter a URL do arquivo
       }
 
       // Extrai o caminho do arquivo da resposta
       let file_path = fileData.result.file_path;
-      // Constroi a URL completa para o arquivo
       let file_url = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file_path}`;
+
+      await sendMessage('log6: URL do arquivo obtida.', env);
 
       // 2️⃣ Baixa a imagem do Telegram
       let imageResponse = await fetch(file_url); // Faz a requisição para obter a imagem
       let imageBlob = await imageResponse.blob(); // Converte a resposta em Blob (arquivo binário)
       let buffer = await imageBlob.arrayBuffer(); // Usa arrayBuffer diretamente no lugar do Buffer
 
+      await sendMessage('log7: Imagem baixada com sucesso.', env);
+
       // 3️⃣ Realiza o login no Mega.nz
+      await sendMessage('log8: Fazendo login no Mega.nz.', env);
       const client = await loginToMega(MEGA_EMAIL, MEGA_PASSWORD); // Faz o login usando o e-mail e senha
 
       // 4️⃣ Envia a imagem para o Mega
+      await sendMessage('log9: Enviando imagem para o Mega.nz.', env);
       const uploadResult = await uploadFileToMega(client, buffer, fileName); // Faz o upload do arquivo para o Mega
 
       // Exibe o link do arquivo carregado no Mega
       console.log("Imagem salva no Mega:", uploadResult);
+      await sendMessage(`log10: Imagem salva no Mega: ${uploadResult}`, env);
 
       return uploadResult; // Retorna o link do arquivo no Mega.nz
 
   } catch (error) {
       // Captura qualquer erro durante o processo
       console.error("Erro no processamento:", error);
+      await sendMessage(`logError: ${error.message}`, env);
       return null; // Retorna null em caso de erro
   }
 }
+
 
 
 // Função para realizar o login no Mega.nz e retornar os dados de autenticação
