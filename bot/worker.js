@@ -22,7 +22,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
       let messageText = String(update.message.text);  //captura o texto da mensagem do emissor e define como String
       
-    const  _data = await dados('read','',env, userId); //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
+    const  _data = ''; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
     const users = recUser(userId, update, env);
     if (!userState) { //Verifica se o estado do usuário existe
