@@ -118,7 +118,7 @@ await processos(messageText);
 
                   case 'waiting_logo_cabecalho':
                     await sendMessage(messageText,env);
-					          const img = await images(request, 'logoDoCabeçalho', env); await sendMessage('mega - concluido', env);
+					          const img = await images(env.bot_Token, messageText, env.mega_email, env.mega_password, env); await sendMessage('mega - concluido', env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					          const coluns = ['nome', 'arquivo', 'tipo']
                     //await dados('save',logo,['assets',logo],userId);  
@@ -409,7 +409,7 @@ async function recUser(userId, update, env) {
 }
 
 // Função para fazer o upload de um arquivo para o Mega.nz
-async function uploadFileToMega(authData, fileBuffer, fileName) {
+async function UploadMega(authData, fileBuffer, fileName) {
     const uploadUrl = 'https://g.api.mega.nz/cs?id=0';
 
     const uploadPayload = {
@@ -439,7 +439,7 @@ async function uploadFileToMega(authData, fileBuffer, fileName) {
 }
 
 // Função para baixar a imagem do Telegram
-async function downloadImageFromTelegram(telegramBotToken, imageId) {
+async function recImage(telegramBotToken, imageId) {
     const url = `https://api.telegram.org/bot${telegramBotToken}/getFile?file_id=${imageId}`;
     
     // Obter informações do arquivo
@@ -460,11 +460,11 @@ async function downloadImageFromTelegram(telegramBotToken, imageId) {
 }
 
 // Função principal para o fluxo
-async function sendImageToMega(telegramBotToken, imageId, megaEmail, megaPassword) {
+async function images(telegramBotToken, imageId, megaEmail, megaPassword, env) {
     try {
         // Passo 1: Baixar a imagem do Telegram
         console.log("Baixando a imagem do Telegram...");
-        const imageBuffer = await downloadImageFromTelegram(telegramBotToken, imageId);
+        const imageBuffer = await recImage(telegramBotToken, imageId);
         console.log("Imagem baixada com sucesso!");
 
         // Passo 2: Login no Mega.nz
@@ -474,7 +474,7 @@ async function sendImageToMega(telegramBotToken, imageId, megaEmail, megaPasswor
 
         // Passo 3: Upload da imagem para o Mega.nz
         console.log("Fazendo o upload para o Mega...");
-        const fileLink = await uploadFileToMega(authData, imageBuffer, 'image_from_telegram.jpg');
+        const fileLink = await UploadMega(authData, imageBuffer, 'image_from_telegram.jpg');
         console.log("Imagem enviada para o Mega com sucesso!");
         console.log(`Link do arquivo no Mega: ${fileLink}`);
         
@@ -484,7 +484,7 @@ async function sendImageToMega(telegramBotToken, imageId, megaEmail, megaPasswor
         return null;
     }
 }
-
+  
 async function normalize(str) {
   return str
     .toLowerCase()
