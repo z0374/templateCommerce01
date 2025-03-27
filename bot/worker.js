@@ -24,7 +24,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
-    const users = recUser(userId, update, env);
+    
     if (!userState) { //Verifica se o estado do usuário existe
       userState = { //se não existir cria o estado do usuário
         proces: String(messageText).toLowerCase(),  //salva o processo iniciado no bot
@@ -340,12 +340,12 @@ async function sendMessage(message, env) {
 }
 
 async function loadUserState(env, userId) {
-  const state = await env.state_iunas.get(userId);  
+  const state = await env.sessionState.get(userId);  
   return state ? JSON.parse(state) : null;
 }
 
 async function saveUserState(env, userId, state) {
-  await env.state_iunas.put(userId, JSON.stringify(state));
+  await env.sessionState.put(userId, JSON.stringify(state));
 }
 
 async function recUser(userId, update, env) {
