@@ -93,7 +93,7 @@ await processos(messageText);
             return new Response('Aguardando comando',{status:200}); //retorna a mensagem 'Aguardando comando' com status:200 e finaliza o script
         
             default:  //Caso não seja nenhuma das chaves anteriores passa para as chaves de seção do usuário
-             if(userState.proces===''){return new Response('Nenhum processo iniciado')}
+             if(userState.proces===''){return new Response('Nenhum processo iniciado'); await sendMessage('inicie um processo',env);}
 			
               switch (userState.state.toLowerCase()) {  //abre uma chave utilizando o estado do usuário em minúsculo
 			      
