@@ -7,6 +7,9 @@ workers_dev = true  # Para rodar no domínio de workers-dev
 compatibility_date = "2024-02-18"  # Use a data atual
 main = "worker.js"  # Caminho correto para o seu script
 
+[observability.logs]
+enabled = true
+
 [build.upload]
 format = "service-worker"
 [build]

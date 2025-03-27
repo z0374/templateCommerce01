@@ -21,7 +21,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
       let messageText = String(update.message.text);  //captura o texto da mensagem do emissor e define como String
-    console.log(chatId);
+   
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
     await sendMessage('log1',env);
@@ -313,14 +313,14 @@ if(users === null && messageText == '/index' || users === null && messageText ==
 async function sendMessage(message, env) {
   await new Promise(resolve => setTimeout(resolve, 500));
   const mensagem = encodeURIComponent(message);
-  const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendMessage?chat_id=-4736398066&text=${mensagem}`;
+  const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendMessage?chat_id=-4624902460&text=${mensagem}`;
 
   try {
     const response = await fetch(telegramUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: -4736398066,
+        chat_id: -4624902460,
         text: message,
         parse_mode: "HTML",
       }),
