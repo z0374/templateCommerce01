@@ -43,9 +43,9 @@ if(users === null && messageText == '/index' || users === null && messageText ==
 	messageText = '';	//Muda a mensagem para vazio
 	await saveUserState(env, userId, userState);  //Salva o estado do usuário usando a função saveUserState com a variável env como parâmetro o identificador do usuário eo array do userState.
 	await processos('');	//Chama a função processos passando o string vazia da mensagem como parametro
-}else{	await processos(messageText);  //Chama a função processos passando o texto da mensagem como parametro
+}else{	  //Chama a função processos passando o texto da mensagem como parametro
      }*/
-   
+await processos(messageText);
     async function processos(messageText){  //Define a função processos com o texto da mensagem como parâmetro
       if(userState.procesCont>3){userState=null; await saveUserState(env, userId, userState);return new Response('Falha na requisição');} //Verifica se a quantidade de processos é maior que 3. Se for falha a requisição
       else{userState.procesCont++;} //Se não for adiciona 1 ao contador de processos
