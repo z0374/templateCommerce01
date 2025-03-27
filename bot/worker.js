@@ -6,7 +6,7 @@ export default { //Exporta as variáveis de ambientes
   }else if(request.headers.get('X-Page-Token')==='lrbb1lrp00wp1w3I1l70b4r8r570'){ //verifica se a página que esta solicitando esta autorizada a receber os dados
      // return handleJson(request, env);  //Chama a função que envia os dados para a hospedagem
   }else{ 
-    /*await sendMessage('Acesso Negado',env);*/ return new Response('Acesso Negado',{status:200})} //Caso não for uma hospedagem autorizada ou o bot do telegram nega o acesso
+    await sendMessage('Acesso Negado',env); return new Response('Acesso Negado',{status:200})} //Caso não for uma hospedagem autorizada ou o bot do telegram nega o acesso
   },
 };
 
