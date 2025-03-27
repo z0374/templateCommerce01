@@ -1,6 +1,6 @@
 export default { //Exporta as variáveis de ambientes
   async fetch(request, env, ctx) { //Faz a requisição asincrona das variaveis de ambiente e da requisição
-  if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') === '5354w$0f0') { //Verifica se a requisição vem do bot do telegram
+  if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') === '5354wD0f0D0f054w705') { //Verifica se a requisição vem do bot do telegram
    return handleRequest(request, env); //Chama a função que trata a requisição do telegram
   }else if(request.headers.get('X-Page-Token')==='lrbb1lrp00wp1w3I1l70b4r8r570'){ //verifica se a página que esta solicitando esta autorizada a receber os dados
       //return handleJson(request, env);  //Chama a função que envia os dados para a hospedagem
@@ -24,7 +24,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
     let userState = await loadUserState(env, userId); //Recupera as informações da seção do usuário no bot da função assíncrona loadUserState passando o env como parâmetro e o identificador do usuário
-    
+    await sendMessage('log1',env);
     if (!userState) { //Verifica se o estado do usuário existe
       userState = { //se não existir cria o estado do usuário
         proces: String(messageText).toLowerCase(),  //salva o processo iniciado no bot
@@ -36,7 +36,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
         procesCont:0  //contador de processos em execução
       };
     }
-
+    await sendMessage('log1',env);
 /*
 if(users === null && messageText == '/index' || users === null && messageText == '/index'){	//Verifica se o usuário ja existe.
 	userState.state='waiting_'+messageText;	//Se não existir inicia o processo de criação
@@ -49,13 +49,13 @@ if(users === null && messageText == '/index' || users === null && messageText ==
     async function processos(messageText){  //Define a função processos com o texto da mensagem como parâmetro
       if(userState.procesCont>3){userState=null; await saveUserState(env, userId, userState);return new Response('Falha na requisição');} //Verifica se a quantidade de processos é maior que 3. Se for falha a requisição
       else{userState.procesCont++;} //Se não for adiciona 1 ao contador de processos
-
+      await sendMessage('log1',env);
       if(userState!==null || messageText!=='') {  //verifica se o estado do usuário e nulo ou se o texto da mensagem é vazio
         if(userState.state.includes("waiting_section") || userState.state.includes("waiting_comand")){  //Verifica se o estado do usuário é waiting_section ou waiting_comand
           userState.state += '_' + await normalize(messageText);  //Adiciona a mensagem do texto normalizada ao final do estado do usuário
           await saveUserState(env, userId, userState);  //Salva o estado do usuário usando a função saveUserState com a variável env como parâmetro o identificador do usuário eo array do userState.
         }
-
+        await sendMessage('log1',env);
         switch(messageText.toLowerCase()){  //abre uma chave passando a mensagem em minúsculo
           case '/encerrar': //caso o comando for /encerrar
             userState = null  //define o userState como nulo
