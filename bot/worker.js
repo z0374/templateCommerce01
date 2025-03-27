@@ -26,7 +26,7 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
         
-      if (update.message.photo){
+      if (update.message.photo){ await sendMessage('conain image',env);
         const photos = update.message.photo;
         let messageText = photos[photos.length - 1].file_id;
         await sendMessage(messageText + ' OK',env);
