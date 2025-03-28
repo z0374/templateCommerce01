@@ -25,14 +25,14 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const chatId = Number(update.message.chat.id);  //Captura o identificador do chat e define como number
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
-        
+      let messageText;
       if (update.message.photo) {
         await sendMessage('Contain image', env);  // Corrected typo
         const photos = update.message.photo;
-        const messageText = photos[photos.length - 1].file_id;  // Get the highest quality photo
+        messageText = photos[photos.length - 1].file_id;  // Get the highest quality photo
         await sendMessage(messageText + ' OK', env);  // Send the file_id with "OK"
     }else{
-        const messageText = String(update.message.text);    //captura o texto da mensagem do emissor e define como String
+        messageText = String(update.message.text);    //captura o texto da mensagem do emissor e define como String
       }
 
     const  _data = []; //Recupera os dados do KV através da função assíncrona dados com o parâmetro de leitura e passando o env como parâmetro e salva na variável ' _data'
