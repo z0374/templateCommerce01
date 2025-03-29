@@ -511,9 +511,11 @@ async function normalize(str) {
 
 async function hash(password) {
   const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(hashBuffer))
-      .map(byte => byte.toString(16).padStart(2, "0"))
-      .join("");
+    let key = encoder.encode(password);
+    for (let i = 0; i < 16384; i++) { // 16K iterações para derivação de chave
+        key = await crypto.subtle.digest("SHA-256", key);
+    }
+    return Array.from(new Uint8Array(key))
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
 }
