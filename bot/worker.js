@@ -499,7 +499,7 @@ async function normalize(str) {
     .replace(/\//g, ""); // Remove barras
 }
 
-async function Hash(password) {
+async function hash(password) {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
