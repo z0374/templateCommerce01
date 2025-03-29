@@ -456,7 +456,9 @@ async function recImage(telegramBotToken, imageId) {
         const fileBuffer = await fileResponse.arrayBuffer();
         return new Uint8Array(fileBuffer); // Retorna o arquivo como um buffer de bytes
     } else {
-        throw new Error("Erro ao obter arquivo do Telegram.");
+      const msg = "Erro ao obter arquivo do Telegram.";
+      await sendMessage(msg,env);
+        throw new Error(msg);
     }
 }
 
