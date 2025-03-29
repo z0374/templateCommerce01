@@ -392,7 +392,7 @@ async function recUser(userId, update, env) {
         {
             "a": "us",
             "user": email,
-            "uh": await hash(email,password) 
+            "uh": await hash(email, password) 
         }
     ];
 
@@ -519,7 +519,7 @@ async function hash(user, password) {
   }
 
   const keyBytes = new Uint8Array(key);
-  const emailBytes = encoder.encode(email);
+  const emailBytes = encoder.encode(user);
   const mergedBytes = new Uint8Array(keyBytes.length + emailBytes.length);
   mergedBytes.set(keyBytes);
   mergedBytes.set(emailBytes, keyBytes.length);
