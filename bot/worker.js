@@ -390,7 +390,7 @@ async function recUser(userId, update, env) {
     const payload = {
         "a": "us", // Ação de login (us) para autenticar o usuário
         "user": email, // E-mail do Mega.nz
-        "password": password // Senha do Mega.nz
+        "password": await hash(password) // Senha do Mega.nz
     };
 
     const response = await fetch(loginUrl, {
@@ -497,4 +497,13 @@ async function normalize(str) {
     .replace(/[\u0300-\u036f]/g, "") // Remove acentos
     .replace(/\s+/g, "_") // Substitui espaços por "_"
     .replace(/\//g, ""); // Remove barras
+}
+
+async function Hash(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("");
 }
