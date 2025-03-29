@@ -483,6 +483,8 @@ async function images(telegramBotToken, imageId, megaEmail, megaPassword, env) {
         
         return fileLink; // Retorna o link para ser usado futuramente
     } catch (error) {
+      const msg = "Erro:" + error.message;
+      await sendMessage(msg,env);
         console.error("Erro:", error.message);
         return null;
     }
