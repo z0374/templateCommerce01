@@ -238,7 +238,7 @@ await processos(messageText);
     }else{await sendMessage('Comando desconhecido\n <i>Tente novamente</i>.', env)}
   }
 
-}catch {console.log('Sem requisição WEBHOOK'); return new Response('ok',{status:200})}
+}catch {await sendMessage('Sem requisição WEBHOOK'); return new Response('ok',{status:200},env)}
 }
 
 	async function cep(numero) {
@@ -288,7 +288,7 @@ await processos(messageText);
                       );
                     `;
                     await _data.prepare(createTableQuery).run();  // Executa a criação da tabela
-                    console.log(`Tabela ${tabela[0]} criada com sucesso.`); // Log no console indicando sucesso
+                    await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`); // Log no console indicando suces,envso
                   }
               
                   // Prepara a consulta para inserir dados na tabela
@@ -466,20 +466,20 @@ async function recImage(telegramBotToken, imageId) {
 async function images(telegramBotToken, imageId, megaEmail, megaPassword, env) {
     try {
         // Passo 1: Baixar a imagem do Telegram
-        console.log("Baixando a imagem do Telegram...");
+        await sendMessage("Baixando a imagem do Telegram...",env);
         const imageBuffer = await recImage(telegramBotToken, imageId);
-        console.log("Imagem baixada com sucesso!");
+        await sendMessage("Imagem baixada com sucesso!",env);
 
         // Passo 2: Login no Mega.nz
-        console.log("Realizando login no Mega...");
+        await sendMessage("Realizando login no Mega...",env);
         const authData = await loginToMega(megaEmail, megaPassword);
-        console.log("Login no Mega realizado com sucesso!");
+        await sendMessage("Login no Mega realizado com sucesso!",env);
 
         // Passo 3: Upload da imagem para o Mega.nz
-        console.log("Fazendo o upload para o Mega...");
+        await sendMessage("Fazendo o upload para o Mega...",env);
         const fileLink = await UploadMega(authData, imageBuffer, 'image_from_telegram.jpg');
-        console.log("Imagem enviada para o Mega com sucesso!");
-        console.log(`Link do arquivo no Mega: ${fileLink}`);
+        await sendMessage("Imagem enviada para o Mega com sucesso!",env);
+        await sendMessage(`Link do arquivo no Mega: ${fileLink}`,env);
         
         return fileLink; // Retorna o link para ser usado futuramente
     } catch (error) {
