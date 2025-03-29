@@ -392,7 +392,7 @@ async function recUser(userId, update, env) {
         {
             "a": "us",
             "user": email,
-            "uh": await hash(password) 
+            "uh": await hash(email,password) 
         }
     ];
 
@@ -509,13 +509,23 @@ async function normalize(str) {
     .replace(/\//g, ""); // Remove barras
 }
 
-async function hash(password) {
+async function hash(user, password) {
   const encoder = new TextEncoder();
-    let key = encoder.encode(password);
-    for (let i = 0; i < 16384; i++) { // 16K iterações para derivação de chave
-        key = await crypto.subtle.digest("SHA-256", key);
-    }
-    return Array.from(new Uint8Array(key))
-        .map(byte => byte.toString(16).padStart(2, "0"))
-        .join("");
+  let key = encoder.encode(password);
+
+  // Criando um hash iterativo da senha (Mega.nz usa 65536 iterações)
+  for (let i = 0; i < 65536; i++) {
+      key = await crypto.subtle.digest("SHA-256", key);
+  }
+
+  const keyBytes = new Uint8Array(key);
+  const emailBytes = encoder.encode(email);
+  const mergedBytes = new Uint8Array(keyBytes.length + emailBytes.length);
+  mergedBytes.set(keyBytes);
+  mergedBytes.set(emailBytes, keyBytes.length);
+
+  const userHash = await crypto.subtle.digest("SHA-256", mergedBytes);
+  return Array.from(new Uint8Array(userHash))
+      .map(byte => byte.toString(16).padStart(2, "0"))
+      .join("");
 }
