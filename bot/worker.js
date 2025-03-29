@@ -386,12 +386,15 @@ async function recUser(userId, update, env) {
   }
 
   async function loginToMega(email, password) {
-    const loginUrl = 'https://g.api.mega.nz/cs?id=0'; // URL de login da API do Mega.nz
-    const payload = {
-        "a": "us", // Ação de login (us) para autenticar o usuário
-        "user": email, // E-mail do Mega.nz
-        "password": await hash(password) // Senha do Mega.nz
-    };
+    const loginUrl = 'https://g.api.mega.nz/cs?id=0';
+
+    const payload = [
+        {
+            "a": "us",
+            "user": email,
+            "uh": await hash(password) 
+        }
+    ];
 
     const response = await fetch(loginUrl, {
         method: 'POST',
@@ -401,11 +404,18 @@ async function recUser(userId, update, env) {
         body: JSON.stringify(payload)
     });
 
-    const data = await response.json();
-    if (data.ts) {
-        return data; // Retorna os dados de autenticação
-    } else {
-        throw new Error("Falha na autenticação.");
+    const text = await response.text(); // Captura a resposta
+    console.log("Resposta bruta:", text);
+
+    try {
+        const data = JSON.parse(text); // Converte para JSON
+        if (data[0] && data[0].ts) {
+            return data[0]; // Retorna os dados da sessão
+        } else {
+            throw new Error("Falha na autenticação.");
+        }
+    } catch (error) {
+        throw new Error("Resposta inesperada da API: " + text);
     }
 }
 
