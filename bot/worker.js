@@ -412,18 +412,41 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
+// Função principal que converte o buffer de imagem para o formato WebP
 async function convertToWebP(fileBuffer) {
-    const conversionResponse = await fetch("https://api.squoosh.app/convert", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            file: [...new Uint8Array(fileBuffer)],
-            options: { format: "webp", quality: 75 },
-        }),
-    });
+    
+    // Cria um ImageBitmap a partir do buffer da imagem fornecido
+    const image = await createImageFromBuffer(fileBuffer);
 
-    return conversionResponse.arrayBuffer();
+    // Cria um Canvas Offscreen (um canvas não visível) com as dimensões da imagem
+    const canvas = new OffscreenCanvas(image.width, image.height);
+    
+    // Obtém o contexto 2D do canvas para poder desenhar nele
+    const context = canvas.getContext('2d');
+    
+    // Desenha a imagem no canvas a partir do ImageBitmap (posição 0, 0)
+    context.drawImage(image, 0, 0);
+
+    // Converte o conteúdo do canvas para um Blob com o tipo MIME 'image/webp'
+    const webpBlob = await canvas.convertToBlob({ type: 'image/webp' });
+    
+    // Retorna o Blob WebP como um ArrayBuffer
+    return await webpBlob.arrayBuffer();
+  }
+
+  // Função auxiliar para criar um ImageBitmap a partir de um buffer de imagem
+  async function createImageFromBuffer(fileBuffer) {
+    
+    // Cria um Blob a partir do buffer da imagem
+    const blob = new Blob([fileBuffer]);
+    
+    // Cria um ImageBitmap a partir do Blob (é uma versão otimizada de uma imagem)
+    const imageBitmap = await createImageBitmap(blob);
+    
+    // Retorna o ImageBitmap criado
+    return imageBitmap;
 }
+
 
 async function getAccessToken(refreshToken, clientId, clientSecret) {
   const response = await fetch('https://oauth2.googleapis.com/token', {
