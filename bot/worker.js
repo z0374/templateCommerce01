@@ -426,28 +426,44 @@ async function convertToWebP(fileBuffer) {
 }
 
 async function uploadGdrive(webpBuffer, fileId, env) {
-    const tokens = env.tokens_G;
-    const [GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_API_KEY, ACCESS_TOKEN] = tokens.split(',');
-  try{
-    const metadata = {
-        name: fileId + ".webp",
-        parents: [GOOGLE_DRIVE_FOLDER_ID],
-        mimeType: "image/webp",
-    };
+  try {
+      const tokens = env.tokens_G;
+      const [GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_API_KEY, ACCESS_TOKEN] = tokens.split(',');
 
-    const formData = new FormData();
-    formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-    formData.append("file", new Blob([webpBuffer], { type: "image/webp" }));
+      const metadata = {
+          name: fileId + ".webp",
+          parents: [GOOGLE_DRIVE_FOLDER_ID],
+          mimeType: "image/webp",
+      };
 
-    const uploadResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key=${GOOGLE_DRIVE_API_KEY}`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
-        body: formData,
-    });
+      const formData = new FormData();
+      formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+      formData.append("file", new Blob([webpBuffer], { type: "image/webp" }));
 
-    return uploadResponse.json();
-  }catch(error){await sendMessage('Erro.:'+error,env);}
+      const uploadResponse = await fetch(
+          `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key=${GOOGLE_DRIVE_API_KEY}`,
+          {
+              method: "POST",
+              headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+              body: formData,
+          }
+      );
+
+      // Captura o JSON da resposta
+      const jsonResponse = await uploadResponse.json();
+
+      if (!uploadResponse.ok) {
+          throw new Error(`Erro no upload: ${JSON.stringify(jsonResponse)}`);
+      }
+
+      // Retorna a resposta da API do Google Drive
+      return jsonResponse;
+  } catch (error) {
+      await sendMessage(`Erro: ${error.message}`, env);
+      return { error: error.message };
+  }
 }
+
   
 async function normalize(str) {
   return str
