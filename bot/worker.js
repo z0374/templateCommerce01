@@ -119,7 +119,7 @@ await processos(messageText);
 
                   case 'waiting_logo_cabecalho':
                     await sendMessage(messageText,env);
-					          const img = await images(env.bot_Token, messageText, env.mega_email, env.mega_password, env); await sendMessage('mega - concluido', env);
+					          const img = await image(messageText, 'logoImage'+new Date(), env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					          const coluns = ['nome', 'arquivo', 'tipo']
                     //await dados('save',logo,['assets',logo],userId);  
@@ -385,119 +385,67 @@ async function recUser(userId, update, env) {
     }
   }
 
-  async function loginToMega(email, password) {
-    const loginUrl = 'https://g.api.mega.nz/cs?id=0';
+  async function image(fileId, name, env){
+    await sendMessage('recuperando imagem...',env);
+      const fileBuffer = await recFile(fileId,env);
+    await sendMessage('Arquivo recuperado com sucesso!',env);
 
-    const payload = [
-        {
-            "a": "us",
-            "user": email,
-            "uh": await hash(email, password) 
-        }
-    ];
+    await sendMessage('convertendo arquivo...',env);
+      const webpBuffer = await convertToWebP(fileBuffer);
+    await sendMessage('Convertido com sucesso!',env);
 
-    const response = await fetch(loginUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    });
+    await sendMessage('Enviando para o armazenamento...',env);
+      await uploadGdrive(webpBuffer, name, env);
+    await sendMessage('Arquivo salvo com sucesso!',env);
 
-    const text = await response.text(); // Captura a resposta
-    console.log("Resposta bruta:", text);
-
-    try {
-        const data = JSON.parse(text); // Converte para JSON
-        if (data[0] && data[0].ts) {
-            return data[0]; // Retorna os dados da sessão
-        } else {
-            throw new Error("Falha na autenticação.");
-        }
-    } catch (error) {
-        throw new Error("Resposta inesperada da API: " + text);
+  }
+  async function recFile(fileId, env) {
+    const TELEGRAM_BOT_TOKEN = env.bot_Token;
+    const fileUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`;
+    const fileResponse = await fetch(fileUrl);
+    const fileData = await fileResponse.json();
+    
+    if (!fileData.result || !fileData.result.file_path) {
+        throw new Error("Erro ao obter arquivo do Telegram");
     }
+
+    return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
-// Função para fazer o upload de um arquivo para o Mega.nz
-async function UploadMega(authData, fileBuffer, fileName) {
-    const uploadUrl = 'https://g.api.mega.nz/cs?id=0';
+async function convertToWebP(fileBuffer) {
+    const conversionResponse = await fetch("https://api.squoosh.app/convert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            file: [...new Uint8Array(fileBuffer)],
+            options: { format: "webp", quality: 75 },
+        }),
+    });
 
-    const uploadPayload = {
-        "a": "up",
-        "n": fileName,
-        "s": fileBuffer.length,
-        "t": authData.t,
-        "k": authData.k
+    return conversionResponse.arrayBuffer();
+}
+
+async function uploadGdrive(webpBuffer, fileId, env) {
+    const tokens = env.tokens_G;
+    const [GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_API_KEY, ACCESS_TOKEN] = tokens.split(',');
+    
+    const metadata = {
+        name: fileId + ".webp",
+        parents: [GOOGLE_DRIVE_FOLDER_ID],
+        mimeType: "image/webp",
     };
 
-    const uploadResponse = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(uploadPayload)
+    const formData = new FormData();
+    formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
+    formData.append("file", new Blob([webpBuffer], { type: "image/webp" }));
+
+    const uploadResponse = await fetch(`https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key=${GOOGLE_DRIVE_API_KEY}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
+        body: formData,
     });
 
-    const uploadData = await uploadResponse.json();
-    if (uploadData && uploadData.ok) {
-        // Gerar o link de download do arquivo
-        const fileLink = `https://mega.nz/file/${uploadData.n}`;
-        return fileLink; // Retorna o link de download
-    } else {
-        throw new Error("Erro no upload.");
-    }
-}
-
-// Função para baixar a imagem do Telegram
-async function recImage(telegramBotToken, imageId) {
-    const url = `https://api.telegram.org/bot${telegramBotToken}/getFile?file_id=${imageId}`;
-    
-    // Obter informações do arquivo
-    const response = await fetch(url);
-    const data = await response.json();
-    
-    if (data.ok) {
-        const filePath = data.result.file_path;
-        const fileUrl = `https://api.telegram.org/file/bot${telegramBotToken}/${filePath}`;
-
-        // Baixar o arquivo
-        const fileResponse = await fetch(fileUrl);
-        const fileBuffer = await fileResponse.arrayBuffer();
-        return new Uint8Array(fileBuffer); // Retorna o arquivo como um buffer de bytes
-    } else {
-      const msg = "Erro ao obter arquivo do Telegram.";
-      await sendMessage(msg,env);
-        throw new Error(msg);
-    }
-}
-
-// Função principal para o fluxo
-async function images(telegramBotToken, imageId, megaEmail, megaPassword, env) {
-    try {
-        // Passo 1: Baixar a imagem do Telegram
-        await sendMessage("Baixando a imagem do Telegram...",env);
-        const imageBuffer = await recImage(telegramBotToken, imageId);
-        await sendMessage("Imagem baixada com sucesso!",env);
-
-        // Passo 2: Login no Mega.nz
-        await sendMessage("Realizando login no Mega...",env);
-        const authData = await loginToMega(megaEmail, megaPassword);
-        await sendMessage("Login no Mega realizado com sucesso!",env);
-
-        // Passo 3: Upload da imagem para o Mega.nz
-        await sendMessage("Fazendo o upload para o Mega...",env);
-        const fileLink = await UploadMega(authData, imageBuffer, 'image_from_telegram.jpg');
-        await sendMessage("Imagem enviada para o Mega com sucesso!",env);
-        await sendMessage(`Link do arquivo no Mega: ${fileLink}`,env);
-        
-        return fileLink; // Retorna o link para ser usado futuramente
-    } catch (error) {
-      const msg = "Erro:" + error.message;
-      await sendMessage(msg,env);
-        console.error("Erro:", error.message);
-        return null;
-    }
+    return uploadResponse.json();
 }
   
 async function normalize(str) {
