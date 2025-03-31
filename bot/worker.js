@@ -413,52 +413,37 @@ async function recUser(userId, update, env) {
 }
 
 // Função principal que converte o buffer de imagem para o formato WebP
-async function convertToWebP(fileBuffer) {
-  // Cria um Blob a partir do buffer da imagem
-  const blob = new Blob([fileBuffer]);
-
-  // Cria um objeto URL para o Blob
-  const url = URL.createObjectURL(blob);
-
-  // Cria uma imagem a partir da URL
+async function convertToWebP(imageFile, callback) {
+  // Crie um objeto de imagem
   const img = new Image();
-
-  // Carrega a imagem e converte para WebP
-  await new Promise((resolve, reject) => {
-      img.onload = () => {
-          // Cria o Canvas 2D
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-
-          // Define as dimensões do canvas igual as da imagem
-          canvas.width = img.width;
-          canvas.height = img.height;
-
-          // Desenha a imagem no canvas
-          ctx.drawImage(img, 0, 0);
-
-          // Converte a imagem do canvas para WebP
-          canvas.toBlob(
-              (webpBlob) => {
-                  if (webpBlob) {
-                      // Cria uma URL para o Blob WebP
-                      const webpUrl = URL.createObjectURL(webpBlob);
-                      resolve(webpUrl); // Resolva a URL WebP
-                  } else {
-                      reject('Erro na conversão para WebP');
-                  }
-              },
-              'image/webp',
-              0.75 // Qualidade de compressão (0 a 1)
-          );
-      };
-
-      img.onerror = () => reject('Erro ao carregar a imagem');
-      img.src = url;
-  });
-
-  // Retorna diretamente a URL da imagem WebP
-  return url;
+  
+  // Crie um URL para o arquivo de imagem
+  const reader = new FileReader();
+  
+  reader.onload = function(event) {
+    img.onload = function() {
+      // Crie um canvas e desenhe a imagem nele
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Defina as dimensões do canvas para as dimensões da imagem
+      canvas.width = img.width;
+      canvas.height = img.height;
+      
+      // Desenhe a imagem no canvas
+      ctx.drawImage(img, 0, 0);
+      
+      // Converta o conteúdo do canvas para WebP
+      canvas.toDataURL('image/webp', (dataUrl) => {
+        // Chame a função de retorno de chamada com o URL da imagem WebP
+        callback(dataUrl);
+      });
+    };
+    img.src = event.target.result;
+  };
+  
+  // Leia o arquivo de imagem como URL de dados
+  reader.readAsDataURL(imageFile);
 }
 
 
