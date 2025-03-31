@@ -6,7 +6,7 @@ export default { //Exporta as variáveis de ambientes
   }else if(request.headers.get('X-Page-Token')==='lrbb1lrp00wp1w3I1l70b4r8r570'){ //verifica se a página que esta solicitando esta autorizada a receber os dados
      // return handleJson(request, env);  //Chama a função que envia os dados para a hospedagem
   }else{ 
-    await sendMessage('Acesso Negado',env); return new Response('Acesso Negado',{status:200})} //Caso não for uma hospedagem autorizada ou o bot do telegram nega o acesso
+    /*await sendMessage('Acesso Negado',env);*/ return new Response('Acesso Negado',{status:200})} //Caso não for uma hospedagem autorizada ou o bot do telegram nega o acesso
   },
 };
 
@@ -428,7 +428,7 @@ async function convertToWebP(fileBuffer) {
 async function uploadGdrive(webpBuffer, fileId, env) {
     const tokens = env.tokens_G;
     const [GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_API_KEY, ACCESS_TOKEN] = tokens.split(',');
-    
+  try{
     const metadata = {
         name: fileId + ".webp",
         parents: [GOOGLE_DRIVE_FOLDER_ID],
@@ -446,6 +446,7 @@ async function uploadGdrive(webpBuffer, fileId, env) {
     });
 
     return uploadResponse.json();
+  }catch(error){await sendMessage('Erro.:'+error,env);}
 }
   
 async function normalize(str) {
