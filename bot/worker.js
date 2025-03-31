@@ -417,24 +417,50 @@ async function convertToWebP(fileBuffer) {
   // Cria um Blob a partir do buffer da imagem
   const blob = new Blob([fileBuffer]);
 
-  // Cria um ImageBitmap a partir do Blob (Imagem otimizada)
-  const imageBitmap = await createImageBitmap(blob);
+  // Cria um objeto URL para o Blob
+  const url = URL.createObjectURL(blob);
 
-  // Cria um Canvas Offscreen (um canvas não visível) com as dimensões da imagem
-  const canvas = new OffscreenCanvas(imageBitmap.width, imageBitmap.height);
-  
-  // Obtém o contexto 2D do canvas para poder desenhar nele
-  const context = canvas.getContext('2d');
-  
-  // Desenha a imagem no canvas a partir do ImageBitmap (posição 0, 0)
-  context.drawImage(imageBitmap, 0, 0);
+  // Cria uma imagem a partir da URL
+  const img = new Image();
 
-  // Converte o conteúdo do canvas para um Blob com o tipo MIME 'image/webp'
-  const webpBlob = await canvas.convertToBlob({ type: 'image/webp' });
-  
-  // Retorna o Blob WebP
-  return webpBlob;
+  // Carrega a imagem e converte para WebP
+  await new Promise((resolve, reject) => {
+      img.onload = () => {
+          // Cria o Canvas 2D
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          // Define as dimensões do canvas igual as da imagem
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          // Desenha a imagem no canvas
+          ctx.drawImage(img, 0, 0);
+
+          // Converte a imagem do canvas para WebP
+          canvas.toBlob(
+              (webpBlob) => {
+                  if (webpBlob) {
+                      // Cria uma URL para o Blob WebP
+                      const webpUrl = URL.createObjectURL(webpBlob);
+                      resolve(webpUrl); // Resolva a URL WebP
+                  } else {
+                      reject('Erro na conversão para WebP');
+                  }
+              },
+              'image/webp',
+              0.75 // Qualidade de compressão (0 a 1)
+          );
+      };
+
+      img.onerror = () => reject('Erro ao carregar a imagem');
+      img.src = url;
+  });
+
+  // Retorna diretamente a URL da imagem WebP
+  return url;
 }
+
 
 
   // Função auxiliar para criar um ImageBitmap a partir de um buffer de imagem
