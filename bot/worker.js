@@ -414,25 +414,28 @@ async function recUser(userId, update, env) {
 
 // Função principal que converte o buffer de imagem para o formato WebP
 async function convertToWebP(fileBuffer) {
-    
-    // Cria um ImageBitmap a partir do buffer da imagem fornecido
-    const image = await createImageFromBuffer(fileBuffer);
+  // Cria um Blob a partir do buffer da imagem
+  const blob = new Blob([fileBuffer]);
 
-    // Cria um Canvas Offscreen (um canvas não visível) com as dimensões da imagem
-    const canvas = new OffscreenCanvas(image.width, image.height);
-    
-    // Obtém o contexto 2D do canvas para poder desenhar nele
-    const context = canvas.getContext('2d');
-    
-    // Desenha a imagem no canvas a partir do ImageBitmap (posição 0, 0)
-    context.drawImage(image, 0, 0);
+  // Cria um ImageBitmap a partir do Blob (Imagem otimizada)
+  const imageBitmap = await createImageBitmap(blob);
 
-    // Converte o conteúdo do canvas para um Blob com o tipo MIME 'image/webp'
-    const webpBlob = await canvas.convertToBlob({ type: 'image/webp' });
-    
-    // Retorna o Blob WebP como um ArrayBuffer
-    return await webpBlob.arrayBuffer();
-  }
+  // Cria um Canvas Offscreen (um canvas não visível) com as dimensões da imagem
+  const canvas = new OffscreenCanvas(imageBitmap.width, imageBitmap.height);
+  
+  // Obtém o contexto 2D do canvas para poder desenhar nele
+  const context = canvas.getContext('2d');
+  
+  // Desenha a imagem no canvas a partir do ImageBitmap (posição 0, 0)
+  context.drawImage(imageBitmap, 0, 0);
+
+  // Converte o conteúdo do canvas para um Blob com o tipo MIME 'image/webp'
+  const webpBlob = await canvas.convertToBlob({ type: 'image/webp' });
+  
+  // Retorna o Blob WebP
+  return webpBlob;
+}
+
 
   // Função auxiliar para criar um ImageBitmap a partir de um buffer de imagem
   async function createImageFromBuffer(fileBuffer) {
