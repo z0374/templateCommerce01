@@ -425,10 +425,36 @@ async function convertToWebP(fileBuffer) {
     return conversionResponse.arrayBuffer();
 }
 
+async function getAccessToken(refreshToken, clientId, clientSecret) {
+  const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: refreshToken,
+          grant_type: "refresh_token"
+      })
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+      throw new Error(`Falha ao obter Access Token: ${JSON.stringify(data)}`);
+  }
+
+  return data.access_token;
+}
+
+// Função para fazer upload no Google Drive
 async function uploadGdrive(webpBuffer, fileId, env) {
   try {
+      // Pegando os tokens e credenciais do Cloudflare Environment
       const tokens = env.tokens_G;
-      const [GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_API_KEY, ACCESS_TOKEN] = tokens.split(',');
+      const [GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_API_KEY, REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET] = tokens.split(',');
+
+      // Obtém um novo Access Token antes de fazer o upload
+      const ACCESS_TOKEN = await getAccessToken(REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET);
 
       const metadata = {
           name: fileId + ".webp",
@@ -463,6 +489,7 @@ async function uploadGdrive(webpBuffer, fileId, env) {
       return { error: error.message };
   }
 }
+
 
   
 async function normalize(str) {
