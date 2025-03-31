@@ -390,12 +390,12 @@ async function recUser(userId, update, env) {
       const fileBuffer = await recFile(fileId,env);
     await sendMessage('Arquivo recuperado com sucesso!',env);
 
-    await sendMessage('convertendo arquivo...',env);
-      const webpBuffer = await convertToWebP(fileBuffer);
-    await sendMessage('Convertido com sucesso!',env);
+    //await sendMessage('convertendo arquivo...',env);
+    //  const webpBuffer = await convertToWebP(fileBuffer);
+    //await sendMessage('Convertido com sucesso!',env);
 
     await sendMessage('Enviando para o armazenamento...',env);
-      await uploadGdrive(webpBuffer, name, env);
+      await uploadGdrive(fileBuffer, name, env);
     await sendMessage('Arquivo salvo com sucesso!',env);
 
   }
