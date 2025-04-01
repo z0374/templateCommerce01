@@ -412,11 +412,10 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
-const MAX_UPLOAD_ATTEMPTS = 3;
 
-const MAX_UPLOAD_ATTEMPTS = 3;
 
 async function uploadGdrive(file, filename, mimeType, env) {
+  const MAX_UPLOAD_ATTEMPTS = 3;
   const tokens = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
 
