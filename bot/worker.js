@@ -297,7 +297,7 @@ await processos(messageText);
                   // Prepara a consulta para inserir dados na tabela
                   const colunas = tabela[1].map(coluna => `"${coluna}"`).join(", ");
                   const valores = content.map(() => '?').join(", "); // Usando placeholders ('?') para os valores
-              
+              await sendMessage(valores + ' - ' + colunas, env);
                   // Comando SQL para inserção (não precisa se preocupar com o ID, o banco se encarrega disso)
                   const query = `
                     INSERT INTO ${tabela[0]} (${colunas})
