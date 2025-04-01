@@ -390,12 +390,12 @@ async function recUser(userId, update, env) {
       const fileBuffer = await recFile(fileId,env);
     await sendMessage('Arquivo recuperado com sucesso!',env);
 
-    await sendMessage('convertendo arquivo...',env);
-      const webpBuffer = await convertToWebP(fileBuffer,env);
-    await sendMessage('Convertido com sucesso!',env);
+    //await sendMessage('convertendo arquivo...',env);
+    //  const webpBuffer = await convertToWebP(fileBuffer,env);
+    //await sendMessage('Convertido com sucesso!',env);
 
     await sendMessage('Enviando para o armazenamento...',env);
-    const gDrive =  await uploadGdrive(fileBuffer, name+'.webp', 'image/png', env);
+    const gDrive =  await uploadGdrive(fileBuffer, name, 'image/png', env);
     await sendMessage('Arquivo salvo com sucesso!',env);
 
     return gDrive;
@@ -414,36 +414,11 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
-async function convertToWebP(imageUrl, env) {
-  try {
-    await sendMessage('Baixando imagem do link fornecido...', env);
-    const response = await fetch(imageUrl);
-    if (!response.ok) {
-      throw new Error(`Erro ao baixar a imagem: ${response.statusText}`);
-    }
-    const imageBlob = await response.blob();
-    
-    await sendMessage('Imagem recebida, iniciando conversão...', env);
-    const image = await Image.decode(imageBlob);
-    const webpImage = await image.encode('webp');
-    await sendMessage('Imagem convertida com sucesso!', env);
-    
-    return new Response(webpImage, {
-      headers: {
-        'Content-Type': 'image/webp',
-      },
-    });
-  } catch (error) {
-    await sendMessage(`Erro ao processar a imagem: ${error.message}`, env);
-    return new Response(`Erro ao processar a imagem: ${error.message}`, { status: 500 });
-  }
-}
-
 async function uploadGdrive(file, filename, mimeType, env) {
   const MAX_UPLOAD_ATTEMPTS = 3;
   const tokens = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
-// 
+
   async function getAccessToken() {
     try {
       const response = await fetch('https://oauth2.googleapis.com/token', {
@@ -475,14 +450,21 @@ async function uploadGdrive(file, filename, mimeType, env) {
     return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
   }
 
+  // Detect file extension from MIME type
+  const ext = mimeType.split('/')[1]; // For example, 'image/jpeg' -> 'jpeg'
+  const fileExtension = ext ? `.${ext}` : '';
+  
+  // Ensure the filename has the correct extension
+  const fullFilename = filename.endsWith(fileExtension) ? filename : `${filename}${fileExtension}`;
+
   const metadata = {
-    name: filename,
+    name: fullFilename,
     parents: [DRIVE_FOLDER_ID]
   };
 
   const formData = new FormData();
   formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-  formData.append('file', file, filename);
+  formData.append('file', file, fullFilename);
 
   for (let attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
     try {
@@ -509,6 +491,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
     }
   }
 }
+
 
 
 
