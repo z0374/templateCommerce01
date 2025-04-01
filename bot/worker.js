@@ -299,18 +299,18 @@ await processos(messageText);
 
             // Cria a string de placeholders para inserção (um "?" para cada valor)
             const valores = content.map(() => '?').join(" ");
-              if (content.length !== colunas.split(',').length) {
-                const mensagem = 'Número de valores e colunas não batem.';
-                await sendMessage(mensagem, env);
-                return new Response(mensagem, { status: 400 }); // Retorna resposta com erro
-              }
+                    if (content.length !== tabela[1].split(',').length) {
+                      const mensagem = 'Número de valores e colunas não batem.';
+                      await sendMessage(mensagem, env);
+                      return new Response(mensagem, { status: 400 }); // Retorna resposta com erro
+                    }
             // Cria a consulta SQL para inserir os dados
             const query = `
               INSERT INTO "${tabela[0]}" (${tabela[1]})
               VALUES (${valores});
             `;
 
-            // Envia as informações para o envio
+            // Envia as informações para o envio colunas
             await sendMessage(`${valores} - ${tabela[1]} - ${content}\n\n${query}`, env);
 
             // Executa a inserção dos dados usando os valores fornecidos
