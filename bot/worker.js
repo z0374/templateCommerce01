@@ -395,10 +395,10 @@ async function recUser(userId, update, env) {
     //await sendMessage('Convertido com sucesso!',env);
 
     await sendMessage('Enviando para o armazenamento...',env);
-      await uploadGdrive(fileBuffer, name, env);
+      await uploadGdrive(fileBuffer, name, image/png, env);
     await sendMessage('Arquivo salvo com sucesso!',env);
-
   }
+
   async function recFile(fileId, env) {
     const TELEGRAM_BOT_TOKEN = env.bot_Token;
     const fileUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`;
@@ -412,119 +412,41 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
-// Função principal que converte o buffer de imagem para o formato WebP
-async function convertToWebP(imageFile, callback) {
-  // Crie um objeto de imagem
-  const img = new Image();
-  
-  // Crie um URL para o arquivo de imagem
-  const reader = new FileReader();
-  
-  reader.onload = function(event) {
-    img.onload = function() {
-      // Crie um canvas e desenhe a imagem nele
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Defina as dimensões do canvas para as dimensões da imagem
-      canvas.width = img.width;
-      canvas.height = img.height;
-      
-      // Desenhe a imagem no canvas
-      ctx.drawImage(img, 0, 0);
-      
-      // Converta o conteúdo do canvas para WebP
-      canvas.toDataURL('image/webp', (dataUrl) => {
-        // Chame a função de retorno de chamada com o URL da imagem WebP
-        callback(dataUrl);
-      });
-    };
-    img.src = event.target.result;
-  };
-  
-  // Leia o arquivo de imagem como URL de dados
-  reader.readAsDataURL(imageFile);
-}
-
-
-
-  // Função auxiliar para criar um ImageBitmap a partir de um buffer de imagem
-  async function createImageFromBuffer(fileBuffer) {
-    
-    // Cria um Blob a partir do buffer da imagem
-    const blob = new Blob([fileBuffer]);
-    
-    // Cria um ImageBitmap a partir do Blob (é uma versão otimizada de uma imagem)
-    const imageBitmap = await createImageBitmap(blob);
-    
-    // Retorna o ImageBitmap criado
-    return imageBitmap;
-}
-
-
-async function getAccessToken(refreshToken, clientId, clientSecret) {
-  const response = await fetch('https://oauth2.googleapis.com/token', {
+async function uploadGdrive(file, filename, mimeType, env) {
+  const tokens = env.tokens_G
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
+//
+  async function getAccessToken() {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-          client_id: clientId,
-          client_secret: clientSecret,
-          refresh_token: refreshToken,
-          grant_type: "refresh_token"
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        refresh_token: GOOGLE_REFRESH_TOKEN,
+        grant_type: 'refresh_token'
       })
+    });
+    const data = await response.json();
+    return data.access_token;
+  }
+
+  const accessToken = await getAccessToken();
+  const metadata = {
+    name: filename,
+    parents: [DRIVE_FOLDER_ID]
+  };
+
+  const formData = new FormData();
+  formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+  formData.append('file', file, filename);
+
+  const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: formData
   });
-
-  const data = await response.json();
-
-  if (!response.ok) {
-      throw new Error(`Falha ao obter Access Token: ${JSON.stringify(data)}`);
-  }
-
-  return data.access_token;
-}
-
-// Função para fazer upload no Google Drive
-async function uploadGdrive(webpBuffer, fileId, env) {
-  try {
-      // Pegando os tokens e credenciais do Cloudflare Environment
-      const tokens = env.tokens_G;
-      const [GOOGLE_DRIVE_FOLDER_ID, GOOGLE_DRIVE_API_KEY, REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET] = tokens.split(',');
-
-      // Obtém um novo Access Token antes de fazer o upload
-      const ACCESS_TOKEN = await getAccessToken(REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET);
-
-      const metadata = {
-          name: fileId + ".webp",
-          parents: [GOOGLE_DRIVE_FOLDER_ID],
-          mimeType: "image/webp",
-      };
-
-      const formData = new FormData();
-      formData.append("metadata", new Blob([JSON.stringify(metadata)], { type: "application/json" }));
-      formData.append("file", new Blob([webpBuffer], { type: "image/webp" }));
-
-      const uploadResponse = await fetch(
-          `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&key=${GOOGLE_DRIVE_API_KEY}`,
-          {
-              method: "POST",
-              headers: { Authorization: `Bearer ${ACCESS_TOKEN}` },
-              body: formData,
-          }
-      );
-
-      // Captura o JSON da resposta
-      const jsonResponse = await uploadResponse.json();
-
-      if (!uploadResponse.ok) {
-          throw new Error(`Erro no upload: ${JSON.stringify(jsonResponse)}`);
-      }
-
-      // Retorna a resposta da API do Google Drive
-      return jsonResponse;
-  } catch (error) {
-      await sendMessage(`Erro: ${error.message}`, env);
-      return { error: error.message };
-  }
+  return response.json();
 }
 
 
