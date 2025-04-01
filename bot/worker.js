@@ -119,7 +119,7 @@ await processos(messageText);
 
                   case 'waiting_logo_cabecalho':
                     await sendMessage(messageText,env);
-					          const img = await image(messageText, 'logoImage'+new Date(), env);
+					          const img = await image(messageText, 'logoImage'+new Date().toLocaleString(), env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					          const coluns = ['nome', 'arquivo', 'tipo']
                     //await dados('save',logo,['assets',logo],userId);  
@@ -462,9 +462,14 @@ async function uploadGdrive(file, filename, mimeType, env) {
     parents: [DRIVE_FOLDER_ID]
   };
 
+  // Use a Blob to ensure the file is sent correctly
   const formData = new FormData();
   formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-  formData.append('file', file, fullFilename);
+
+  // If file is a Blob, pass it directly; if not, create a Blob from the file content
+  const fileBlob = file instanceof Blob ? file : new Blob([file]);
+
+  formData.append('file', fileBlob, fullFilename);
 
   for (let attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
     try {
@@ -491,6 +496,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
     }
   }
 }
+
 
 
 
