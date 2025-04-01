@@ -298,7 +298,7 @@ await processos(messageText);
             }
 
             // Cria a string de placeholders para inserção (um "?" para cada valor)
-            const valores = content.map(() => '?').join(", ");
+            const valores = content.map(() => '?').join(" ");
             
             // Cria a consulta SQL para inserir os dados
             const query = `
