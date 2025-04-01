@@ -27,10 +27,10 @@ async function handleRequest(request, env) {  //Função que trata a requisiçã
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
       let messageText;
       if (update.message.photo) {
-        await sendMessage('Contain image', env);  // Corrected typo
+        //await sendMessage('Contain image', env);  // Corrected typo
         const photos = update.message.photo;
         messageText = photos[photos.length - 1].file_id;  // Get the highest quality photo
-        await sendMessage(messageText + ' OK', env);  // Send the file_id with "OK"
+       //await sendMessage(messageText + ' OK', env);  // Send the file_id with "OK"
     }else{
         messageText = String(update.message.text);    //captura o texto da mensagem do emissor e define como String
       }
@@ -118,7 +118,7 @@ await processos(messageText);
                     break;
 
                   case 'waiting_logo_cabecalho':
-                    await sendMessage(messageText,env);
+                   // await sendMessage(messageText,env);
 					          const img = await image(messageText, 'logoImage'+normalize(new Date().toLocaleString()), env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					          const coluns = ['nome', 'arquivo', 'tipo']
