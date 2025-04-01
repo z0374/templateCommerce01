@@ -294,7 +294,7 @@ await processos(messageText);
               `;
 
               await _data.prepare(createTableQuery).run();  
-              await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`, env);  
+              await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`, env);
             }
 
             // Cria a string de placeholders para inserção (um "?" para cada valor)
@@ -307,7 +307,7 @@ await processos(messageText);
             `;
 
             // Envia as informações para o envio
-            await sendMessage(`${valores} - ${tabela[1]} - ${content}`, env);
+            await sendMessage(`${valores} - ${tabela[1]} - ${content}\n\n${query}`, env);
 
             // Executa a inserção dos dados usando os valores fornecidos
             await _data.prepare(query).run(content); // Usa `content` para passar os dados para os placeholders
