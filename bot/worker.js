@@ -417,25 +417,34 @@ async function uploadGdrive(file, filename, mimeType, env) {
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
 
   async function getAccessToken() {
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: GOOGLE_CLIENT_ID,
-        client_secret: GOOGLE_CLIENT_SECRET,
-        refresh_token: GOOGLE_REFRESH_TOKEN,
-        grant_type: 'refresh_token'
-      })
-    });
-    return response.json();
+    try {
+      const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: GOOGLE_CLIENT_ID,
+          client_secret: GOOGLE_CLIENT_SECRET,
+          refresh_token: GOOGLE_REFRESH_TOKEN,
+          grant_type: 'refresh_token'
+        })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to retrieve access token');
+      }
+      const data = await response.json();
+      await sendMensage('Access token retrieved successfully', env);
+      return data.access_token || null;
+    } catch (error) {
+      await sendMensage(`Error retrieving access token: ${error.message}`, env);
+      return null;
+    }
   }
 
-  const tokenData = await getAccessToken();
-  if (!tokenData.access_token) {
-    throw new Error('Failed to retrieve access token');
+  const accessToken = await getAccessToken();
+  if (!accessToken) {
+    return { success: false, message: 'Failed to retrieve access token' };
   }
   
-  const accessToken = tokenData.access_token;
   const metadata = {
     name: filename,
     parents: [DRIVE_FOLDER_ID]
@@ -445,13 +454,26 @@ async function uploadGdrive(file, filename, mimeType, env) {
   formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
   formData.append('file', file, filename);
 
-  const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}` },
-    body: formData
-  });
-  return response.json();
+  try {
+    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}` },
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to upload file');
+    }
+    
+    const result = await response.json();
+    await sendMensage('File uploaded successfully', env);
+    return { success: true, message: 'File uploaded successfully', data: result };
+  } catch (error) {
+    await sendMensage(`Error uploading file: ${error.message}`, env);
+    return { success: false, message: error.message };
+  }
 }
+
 
 
 
