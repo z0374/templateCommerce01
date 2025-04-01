@@ -119,7 +119,7 @@ await processos(messageText);
 
                   case 'waiting_logo_cabecalho':
                     //await sendMessage(messageText,env);
-					          const img = await image(messageText, 'logoDoCabeçalho'+ await normalize(new Date().toLocaleString()), env);
+					          const img = await image(messageText, 'logoDoCabeçalho'+ await normalize(new Date().getMinutes().toString().padStart(2, '0')), env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					          const coluns = ['nome', 'arquivo', 'tipo']
                     await dados('save',logo,['assets',logo],userId);  
