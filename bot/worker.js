@@ -413,9 +413,9 @@ async function recUser(userId, update, env) {
 }
 
 async function uploadGdrive(file, filename, mimeType, env) {
-  const tokens = env.tokens_G
+  const tokens = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
-//
+
   async function getAccessToken() {
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -427,11 +427,15 @@ async function uploadGdrive(file, filename, mimeType, env) {
         grant_type: 'refresh_token'
       })
     });
-    const data = await response.json();
-    return data.access_token;
+    return response.json();
   }
 
-  const accessToken = await getAccessToken();
+  const tokenData = await getAccessToken();
+  if (!tokenData.access_token) {
+    throw new Error('Failed to retrieve access token');
+  }
+  
+  const accessToken = tokenData.access_token;
   const metadata = {
     name: filename,
     parents: [DRIVE_FOLDER_ID]
@@ -448,6 +452,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
   });
   return response.json();
 }
+
 
 
   
