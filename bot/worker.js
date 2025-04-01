@@ -412,9 +412,13 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
+const MAX_UPLOAD_ATTEMPTS = 3;
+
 async function uploadGdrive(file, filename, mimeType, env) {
-  const tokens = await String(env.tokens_G);
+  const tokens = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
+
+  let uploadAttempts = 0;  // Contador de tentativas
 
   async function getAccessToken() {
     try {
@@ -444,7 +448,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
   if (!accessToken) {
     return { success: false, message: 'Failed to retrieve access token' };
   }
-  
+
   const metadata = {
     name: filename,
     parents: [DRIVE_FOLDER_ID]
@@ -454,25 +458,33 @@ async function uploadGdrive(file, filename, mimeType, env) {
   formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
   formData.append('file', file, filename);
 
-  try {
-    const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${accessToken}` },
-      body: formData
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to upload file');
+  while (uploadAttempts < MAX_UPLOAD_ATTEMPTS) {
+    try {
+      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${accessToken}` },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      const result = await response.json();
+      await sendMensage('File uploaded successfully', env);
+      return { success: true, message: 'File uploaded successfully', data: result };
+
+    } catch (error) {
+      uploadAttempts++;
+      await sendMensage(`Error uploading file (Attempt ${uploadAttempts}): ${error.message}`, env);
+
+      if (uploadAttempts >= MAX_UPLOAD_ATTEMPTS) {
+        return { success: false, message: 'Max upload attempts reached' };
+      }
     }
-    
-    const result = await response.json();
-    await sendMensage('File uploaded successfully', env);
-    return { success: true, message: 'File uploaded successfully', data: result };
-  } catch (error) {
-    await sendMensage(`Error uploading file: ${error.message}`, env);
-    return { success: false, message: error.message };
   }
 }
+
 
 
 
