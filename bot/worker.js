@@ -298,7 +298,7 @@ await processos(messageText);
             }
 
             // Cria a string de placeholders para inserção (um "?" para cada valor)
-            const valores = content.map(() => '?').join(" ");
+            const valores = content.map(() => '?').join(", ");
                     if (content.length !== tabela[1].split(',').length) {
                       const mensagem = 'Número de valores e colunas não batem.';
                       await sendMessage(mensagem, env);
