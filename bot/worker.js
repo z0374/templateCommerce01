@@ -312,7 +312,7 @@ await processos(messageText);
                 } catch (error) { // Se ocorrer um erro, entra no bloco catch
                   const mensagem = 'Erro ao salvar dados no banco de dados'; // Mensagem de erro
                   console.error(error); // Log do erro para depuração
-                  await sendMessage(mensagem, env); // Envia a mensagem de erro ao usuário
+                  await sendMessage(mensagem+' - '+error, env); // Envia a mensagem de erro ao usuário
                   return new Response(mensagem, { status: 422 }); // Retorna uma resposta com status 422 (erro no processamento)
                 }
                 break;
