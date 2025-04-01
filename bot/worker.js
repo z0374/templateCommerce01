@@ -397,20 +397,20 @@ async function recUser(userId, update, env) {
 
   async function image(fileId, name, env){
     try{  
-      await sendMessage('recuperando imagem...',env);
-        const fileBuffer = await recFile(fileId,env);
-      await sendMessage('Arquivo recuperado com sucesso!',env);
+      await sendMessage('recuperando imagem...', env);
+        const fileBuffer = await recFile(fileId, env);
+      await sendMessage('Arquivo recuperado com sucesso!', env);
 
       //await sendMessage('convertendo arquivo...',env);
       //  const webpBuffer = await convertToWebP(fileBuffer,env);
       //await sendMessage('Convertido com sucesso!',env);
 
-      await sendMessage('Enviando para o armazenamento...',env);
+      await sendMessage('Enviando para o armazenamento...', env);
       const gDrive =  await uploadGdrive(fileBuffer, name, 'image/png', env);
-      await sendMessage('Arquivo salvo com sucesso!',env);
+      await sendMessage('Arquivo salvo com sucesso!', env);
 
       return gDrive;
-    }catch(error){  await sendMessage('Alerta.: '+error,env); return new Response('Alerta.: '+error, {status:400}); }
+    }catch(error){  await sendMessage('Alerta.: ' + error, env); return new Response('Alerta.: '+error, {status:400}); }
   }
 
   async function recFile(fileId, env) {
