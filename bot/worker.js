@@ -413,7 +413,7 @@ async function recUser(userId, update, env) {
 }
 
 async function uploadGdrive(file, filename, mimeType, env) {
-  const tokens = env.tokens_G;
+  const tokens = await String(env.tokens_G);
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
 
   async function getAccessToken() {
@@ -473,6 +473,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
     return { success: false, message: error.message };
   }
 }
+
 
 
 
