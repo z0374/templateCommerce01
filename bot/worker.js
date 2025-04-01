@@ -12,16 +12,16 @@ export default { //Exporta as variáveis de ambientes
 
 async function handleRequest(request, env) {  //Função que trata a requisição do Webhook
   await new Promise(resolve => setTimeout(resolve, 1000));  //Aguarda 1 segundo para começar a rodar o script
-  await sendMessage('promise OK',env);
+ // await sendMessage('promise OK',env);
   const url = new URL(request.url)|| null;  //Captura a url da requisição
   if (!url) { //Verifica se a url é válida
-    await sendMessage('URL fail',env);
+    //await sendMessage('URL fail',env);
     return new Response("URL inexistente", { status: 500 });  //Caso não seja válida retorna 'URL inesistente' e 'status:500'
   }else{ //Se URL for válida
     try{
-      await sendMessage('url OK',env);
+     // await sendMessage('url OK',env);
       const update = await request.json();  //captura o Json da requisição
-      await sendMessage('request OK',env);
+     // await sendMessage('request OK',env);
       const chatId = Number(update.message.chat.id);  //Captura o identificador do chat e define como number
       const userId = Number(update.message.from.id);  //captura o identificador do usuário que fez a requisição e define como number
       const userName = String(update.message.from.first_name + ' ' + update.message.from.last_name);  //captura o nome do usuário que fez a requisição e define como string
