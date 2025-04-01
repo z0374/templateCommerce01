@@ -414,7 +414,7 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
-async function uploadGdrive(file, filename, mimeType, env) {
+async function uploadGdrive(fileUrl, filename, mimeType, env) {
   const MAX_UPLOAD_ATTEMPTS = 3;
   const tokens = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
@@ -450,11 +450,22 @@ async function uploadGdrive(file, filename, mimeType, env) {
     return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
   }
 
-  // Detect file extension from MIME type
-  const ext = mimeType.split('/')[1]; // For example, 'image/jpeg' -> 'jpeg'
-  const fileExtension = ext ? `.${ext}` : '';
+  // Baixar o arquivo do link
+  await sendMessage(`Baixando arquivo de: ${fileUrl}`, env);
+  const fileResponse = await fetch(fileUrl);
   
-  // Ensure the filename has the correct extension
+  if (!fileResponse.ok) {
+    return new Response(JSON.stringify({ success: false, message: 'Erro ao baixar o arquivo' }), { status: 500 });
+  }
+  
+  const fileBuffer = await fileResponse.arrayBuffer();
+  const fileBlob = new Blob([fileBuffer], { type: mimeType });
+
+  // Detect file extension from MIME type
+  const ext = mimeType.split('/')[1]; // Exemplo: 'image/jpeg' -> 'jpeg'
+  const fileExtension = ext ? `.${ext}` : '';
+
+  // Garantir que o nome do arquivo tenha a extensão correta
   const fullFilename = filename.endsWith(fileExtension) ? filename : `${filename}${fileExtension}`;
 
   const metadata = {
@@ -462,13 +473,8 @@ async function uploadGdrive(file, filename, mimeType, env) {
     parents: [DRIVE_FOLDER_ID]
   };
 
-  // Use a Blob to ensure the file is sent correctly
   const formData = new FormData();
   formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-
-  // If file is a Blob, pass it directly; if not, create a Blob from the file content
-  const fileBlob = file instanceof Blob ? file : new Blob([file]);
-
   formData.append('file', fileBlob, fullFilename);
 
   for (let attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
@@ -484,7 +490,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
       }
 
       const result = await response.json();
-      await sendMessage('File uploaded successfully', env);
+      await sendMessage(`File uploaded successfully: ${fullFilename}`, env);
       return new Response(JSON.stringify({ success: true, message: 'File uploaded successfully', data: result }), { status: 200 });
 
     } catch (error) {
@@ -496,6 +502,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
     }
   }
 }
+
 
 
 
