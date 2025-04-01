@@ -414,6 +414,8 @@ async function recUser(userId, update, env) {
 
 const MAX_UPLOAD_ATTEMPTS = 3;
 
+const MAX_UPLOAD_ATTEMPTS = 3;
+
 async function uploadGdrive(file, filename, mimeType, env) {
   const tokens = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
@@ -430,9 +432,11 @@ async function uploadGdrive(file, filename, mimeType, env) {
           grant_type: 'refresh_token'
         })
       });
+
       if (!response.ok) {
         throw new Error('Failed to retrieve access token');
       }
+
       const data = await response.json();
       await sendMensage('Access token retrieved successfully', env);
       return data.access_token || null;
@@ -444,7 +448,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
 
   const accessToken = await getAccessToken();
   if (!accessToken) {
-    return { success: false, message: 'Failed to retrieve access token' };
+    return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
   }
 
   const metadata = {
@@ -470,17 +474,18 @@ async function uploadGdrive(file, filename, mimeType, env) {
 
       const result = await response.json();
       await sendMensage('File uploaded successfully', env);
-      return { success: true, message: 'File uploaded successfully', data: result };
+      return new Response(JSON.stringify({ success: true, message: 'File uploaded successfully', data: result }), { status: 200 });
 
     } catch (error) {
       await sendMensage(`Error uploading file (Attempt ${attempt} of ${MAX_UPLOAD_ATTEMPTS}): ${error.message}`, env);
 
       if (attempt === MAX_UPLOAD_ATTEMPTS) {
-        return { success: false, message: 'Max upload attempts reached' };
+        return new Response(JSON.stringify({ success: false, message: 'Max upload attempts reached' }), { status: 500 });
       }
     }
   }
 }
+
 
 
 async function normalize(str) {
