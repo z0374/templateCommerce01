@@ -425,7 +425,7 @@ async function recUser(userId, update, env) {
     }
 
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
-  }catch(error){await sendMessage('Erro: ' + error, env); return new Response('Erro: ' + error,{status: 400});}
+  }catch(error){  await sendMessage('Erro: ' + error, env); return new Response('Erro: ' + error,{status: 400});  }
 }
 
 async function uploadGdrive(fileUrl, filename, mimeType, env) {
