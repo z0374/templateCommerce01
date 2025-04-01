@@ -429,93 +429,93 @@ async function recUser(userId, update, env) {
 }
 
 async function uploadGdrive(fileUrl, filename, mimeType, env) {
-  const MAX_UPLOAD_ATTEMPTS = 3;
-  const tokens = env.tokens_G;
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
+        const MAX_UPLOAD_ATTEMPTS = 3;
+        const tokens = env.tokens_G;
+        const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
 
-  async function getAccessToken() {
-    try {
-      const response = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          client_id: GOOGLE_CLIENT_ID,
-          client_secret: GOOGLE_CLIENT_SECRET,
-          refresh_token: GOOGLE_REFRESH_TOKEN,
-          grant_type: 'refresh_token'
-        })
-      });
+        async function getAccessToken() {
+          try {
+            const response = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+              body: new URLSearchParams({
+                client_id: GOOGLE_CLIENT_ID,
+                client_secret: GOOGLE_CLIENT_SECRET,
+                refresh_token: GOOGLE_REFRESH_TOKEN,
+                grant_type: 'refresh_token'
+              })
+            });
 
-      if (!response.ok) {
-        throw new Error('Failed to retrieve access token');
+            if (!response.ok) {
+              throw new Error('Failed to retrieve access token');
+            }
+
+            const data = await response.json();
+            //await sendMessage('Access token retrieved successfully', env);
+            return data.access_token || null;
+          } catch (error) {
+            await sendMessage(`Error retrieving access token: ${error.message}`, env);
+            return null;
+          }
+        }
+
+        const accessToken = await getAccessToken();
+        if (!accessToken) {
+          return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
+        }
+
+        // Baixar o arquivo do link
+        //await sendMessage(`Baixando arquivo de: ${fileUrl}`, env);
+        const fileResponse = await fetch(fileUrl);
+        
+        if (!fileResponse.ok) {
+          return new Response(JSON.stringify({ success: false, message: 'Erro ao baixar o arquivo' }), { status: 500 });
+        }
+        
+        const fileBuffer = await fileResponse.arrayBuffer();
+        const fileBlob = new Blob([fileBuffer], { type: mimeType });
+
+        // Detect file extension from MIME type
+        const ext = mimeType.split('/')[1]; // Exemplo: 'image/jpeg' -> 'jpeg'
+        const fileExtension = ext ? `.${ext}` : '';
+
+        // Garantir que o nome do arquivo tenha a extensão correta
+        const fullFilename = filename.endsWith(fileExtension) ? filename : `${filename}${fileExtension}`;
+
+        const metadata = {
+          name: fullFilename,
+          parents: [DRIVE_FOLDER_ID]
+        };
+
+        const formData = new FormData();
+        formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        formData.append('file', fileBlob, fullFilename);
+
+        for (let attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
+          try {
+            const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${accessToken}` },
+              body: formData
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to upload file (HTTP ${response.status})`);
+            }
+
+            const result = await response.json();
+            //await sendMessage(`File uploaded successfully: ${fullFilename}`, env);
+            //return new Response(JSON.stringify({ success: true, message: 'File uploaded successfully', data: result }), { status: 200 });
+            return fullFilename;
+
+          } catch (error) {
+            await sendMessage(`Error uploading file (Attempt ${attempt} of ${MAX_UPLOAD_ATTEMPTS}): ${error.message}`, env);
+
+            if (attempt === MAX_UPLOAD_ATTEMPTS) {
+              return new Response(JSON.stringify({ success: false, message: 'Max upload attempts reached' }), { status: 500 });
+            }
+          }
       }
-
-      const data = await response.json();
-      //await sendMessage('Access token retrieved successfully', env);
-      return data.access_token || null;
-    } catch (error) {
-      await sendMessage(`Error retrieving access token: ${error.message}`, env);
-      return null;
-    }
-  }
-
-  const accessToken = await getAccessToken();
-  if (!accessToken) {
-    return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
-  }
-
-  // Baixar o arquivo do link
-  //await sendMessage(`Baixando arquivo de: ${fileUrl}`, env);
-  const fileResponse = await fetch(fileUrl);
-  
-  if (!fileResponse.ok) {
-    return new Response(JSON.stringify({ success: false, message: 'Erro ao baixar o arquivo' }), { status: 500 });
-  }
-  
-  const fileBuffer = await fileResponse.arrayBuffer();
-  const fileBlob = new Blob([fileBuffer], { type: mimeType });
-
-  // Detect file extension from MIME type
-  const ext = mimeType.split('/')[1]; // Exemplo: 'image/jpeg' -> 'jpeg'
-  const fileExtension = ext ? `.${ext}` : '';
-
-  // Garantir que o nome do arquivo tenha a extensão correta
-  const fullFilename = filename.endsWith(fileExtension) ? filename : `${filename}${fileExtension}`;
-
-  const metadata = {
-    name: fullFilename,
-    parents: [DRIVE_FOLDER_ID]
-  };
-
-  const formData = new FormData();
-  formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-  formData.append('file', fileBlob, fullFilename);
-
-  for (let attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
-    try {
-      const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${accessToken}` },
-        body: formData
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to upload file (HTTP ${response.status})`);
-      }
-
-      const result = await response.json();
-      //await sendMessage(`File uploaded successfully: ${fullFilename}`, env);
-      //return new Response(JSON.stringify({ success: true, message: 'File uploaded successfully', data: result }), { status: 200 });
-      return fullFilename;
-
-    } catch (error) {
-      await sendMessage(`Error uploading file (Attempt ${attempt} of ${MAX_UPLOAD_ATTEMPTS}): ${error.message}`, env);
-
-      if (attempt === MAX_UPLOAD_ATTEMPTS) {
-        return new Response(JSON.stringify({ success: false, message: 'Max upload attempts reached' }), { status: 500 });
-      }
-    }
-  }
 }
 
 
