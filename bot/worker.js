@@ -122,7 +122,7 @@ await processos(messageText);
                     const agora = new Date();
 					          const img = await image(messageText, 'logoDoCabeçalho'+ await normalize(agora.toISOString().split('T')[0].replace(/-/g, '') + agora.getMinutes().toString().padStart(2, '0')), env);
                     const logo = [img, 'img'];
-					          const coluns = ['nome', 'tipo']
+					          const coluns = 'nome,tipo';
                     await dados('save',logo,['assets',coluns],userId);  
                     userState.state = 'waiting_nome_cabecalho';	//userState.dados.push(logo);
                     await saveUserState(env, userId, userState);  
@@ -281,11 +281,10 @@ await processos(messageText);
                         const tableExists = await _data.prepare(checkTableQuery).bind(tabela[0]).all();
 
                         if (tableExists.results.length === 0) {  // Verifica corretamente se a tabela existe
-                          const colunas = tabela[1].map(coluna => `"${coluna}" TEXT`).join(", ");
                           const createTableQuery = `
                             CREATE TABLE "${tabela[0]}" (
                               id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                              ${colunas} 
+                              ${tabela[1]} 
                             );
                           `;
 
@@ -293,14 +292,11 @@ await processos(messageText);
                           await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`, env);  
                         }
 
-              
-                  // Prepara a consulta para inserir dados na tabela
-                  const colunas = tabela[1].map(coluna => `"${coluna}"`).join(", ");
                   const valores = content.map(() => '?').join(", "); // Usando placeholders ('?') para os valores
               await sendMessage(valores + ' - ' + colunas, env);
                   // Comando SQL para inserção (não precisa se preocupar com o ID, o banco se encarrega disso)
                   const query = `
-                    INSERT INTO ${tabela[0]} (${colunas})
+                    INSERT INTO ${tabela[0]} (${tabela[1]})
                     VALUES (${valores});
                   `;
               
