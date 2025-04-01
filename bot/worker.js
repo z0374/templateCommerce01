@@ -414,7 +414,7 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
-async function convertImageToWebP(imageUrl, env) {
+async function convertToWebP(imageUrl, env) {
   try {
     await sendMessage('Baixando imagem do link fornecido...', env);
     const response = await fetch(imageUrl);
