@@ -319,7 +319,7 @@ if (tableExists.length === 0) {  // Verifica se a tabela existe
                     }
             // Cria a consulta SQL para inserir os dados
             const query = `
-              INSERT INTO "${tabela[0]}" (${tabela[1]})
+              INSERT INTO "${tabela[0]}" (${String(tabela[1])})
               VALUES (${valores});
             `;
 
