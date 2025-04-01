@@ -280,21 +280,35 @@ await processos(messageText);
             }
 
             // Verifica se a tabela existe
-            const tableExists = await _data.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?;`).bind(tabela[0]).all();
+const tableExists = await _data.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?;`).bind(tabela[0]).all();
 
-            if (tableExists.results.length === 0) {  // Verifica corretamente se a tabela existe
-              // Formata as colunas para a criação da tabela
-              const colunas = tabela[1].split(',').map(coluna => `"${coluna.trim()}" TEXT`).join(", ");
-              const createTableQuery = `
-                CREATE TABLE "${tabela[0]}" (
-                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                  ${colunas}
-                );
-              `;
+// Se a tabela não existir, cria a tabela
+if (tableExists.length === 0) {  // Verifica se a tabela existe
+  try {
+    // Formata as colunas para a criação da tabela
+    const colunas = tabela[1].split(',').map(coluna => `"${coluna.trim()}" TEXT`).join(", ");
 
-              await _data.prepare(createTableQuery).run();  
-              await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`, env);
-            }
+    // Criação da query para a tabela diretamente no prepare
+    await _data.prepare(`
+      CREATE TABLE "${tabela[0]}" (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        ${colunas}
+      );
+    `).run();  
+    
+    await sendMessage(`Tabela "${tabela[0]}" criada com sucesso.`, env);
+  } catch (error) {
+    // Caso haja algum erro ao tentar criar a tabela
+    const mensagemErro = `Erro ao criar a tabela ${tabela[0]}.`;
+    console.error(mensagemErro, error);
+    await sendMessage(`${mensagemErro} - ${error.message}`, env);
+    return new Response(`${mensagemErro} - ${error.message}`, { status: 500 }); // Retorna erro de servidor
+  }
+} else {
+  // A tabela já existe, envia uma mensagem de confirmação
+  await sendMessage(`Tabela "${tabela[0]}" já existe.`, env);
+}
+
 
             // Cria a string de placeholders para inserção (um "?" para cada valor)
             const valores = content.map(() => '?').join(", ");
