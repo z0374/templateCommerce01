@@ -118,11 +118,11 @@ await processos(messageText);
                     break;
 
                   case 'waiting_logo_cabecalho':
-                    await sendMessage(messageText,env);
-					          const img = await image(messageText, 'logoImage'+ await normalize(new Date().toLocaleString()), env);
+                    //await sendMessage(messageText,env);
+					          const img = await image(messageText, 'logoDoCabeçalho'+ await normalize(new Date().toLocaleString()), env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					          const coluns = ['nome', 'arquivo', 'tipo']
-                    //await dados('save',logo,['assets',logo],userId);  
+                    await dados('save',logo,['assets',logo],userId);  
                     userState.state = 'waiting_nome_cabecalho';	//userState.dados.push(logo);
                     await saveUserState(env, userId, userState);  
                     await sendMessage(`Certo sr. ${userName}, vamos continuar com a configuração do cabeçalho do site!\n Me informe o nome da sua impresa.:`,env);
