@@ -411,6 +411,7 @@ async function recUser(userId, update, env) {
   }
 
   async function recFile(fileId, env) {
+   try{
     const TELEGRAM_BOT_TOKEN = env.bot_Token;
     const fileUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`;
     const fileResponse = await fetch(fileUrl);
@@ -421,6 +422,7 @@ async function recUser(userId, update, env) {
     }
 
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
+  }catch(error){await sendMessage('Erro: ' + error, env); return new Response('Erro: ' + error,{status: 400});}
 }
 
 async function uploadGdrive(fileUrl, filename, mimeType, env) {
