@@ -119,7 +119,7 @@ await processos(messageText);
 
                   case 'waiting_logo_cabecalho':
                     await sendMessage(messageText,env);
-					          const img = await image(messageText, 'logoImage'+new Date().toLocaleString(), env);
+					          const img = await image(messageText, 'logoImage'+normalize(new Date().toLocaleString()), env);
                     const logo = ['logoDoCabeçalho', img, 'img'];
 					          const coluns = ['nome', 'arquivo', 'tipo']
                     //await dados('save',logo,['assets',logo],userId);  
@@ -437,7 +437,7 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
       }
 
       const data = await response.json();
-      await sendMessage('Access token retrieved successfully', env);
+      //await sendMessage('Access token retrieved successfully', env);
       return data.access_token || null;
     } catch (error) {
       await sendMessage(`Error retrieving access token: ${error.message}`, env);
@@ -451,7 +451,7 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
   }
 
   // Baixar o arquivo do link
-  await sendMessage(`Baixando arquivo de: ${fileUrl}`, env);
+  //await sendMessage(`Baixando arquivo de: ${fileUrl}`, env);
   const fileResponse = await fetch(fileUrl);
   
   if (!fileResponse.ok) {
@@ -490,8 +490,9 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
       }
 
       const result = await response.json();
-      await sendMessage(`File uploaded successfully: ${fullFilename}`, env);
-      return new Response(JSON.stringify({ success: true, message: 'File uploaded successfully', data: result }), { status: 200 });
+      //await sendMessage(`File uploaded successfully: ${fullFilename}`, env);
+      //return new Response(JSON.stringify({ success: true, message: 'File uploaded successfully', data: result }), { status: 200 });
+      return fullFilename;
 
     } catch (error) {
       await sendMessage(`Error uploading file (Attempt ${attempt} of ${MAX_UPLOAD_ATTEMPTS}): ${error.message}`, env);
