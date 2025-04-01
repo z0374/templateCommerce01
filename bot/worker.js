@@ -121,9 +121,9 @@ await processos(messageText);
                     //await sendMessage(messageText,env);
                     const agora = new Date();
 					          const img = await image(messageText, 'logoDoCabeçalho'+ await normalize(agora.toISOString().split('T')[0].replace(/-/g, '') + agora.getMinutes().toString().padStart(2, '0')), env);
-                    const logo = ['logoDoCabeçalho', img, 'img'];
-					          const coluns = ['nome', 'arquivo', 'tipo']
-                    await dados('save',logo,['assets',logo],userId);  
+                    const logo = [img, 'img'];
+					          const coluns = ['nome', 'tipo']
+                    await dados('save',logo,['assets',coluns],userId);  
                     userState.state = 'waiting_nome_cabecalho';	//userState.dados.push(logo);
                     await saveUserState(env, userId, userState);  
                     await sendMessage(`Certo sr. ${userName}, vamos continuar com a configuração do cabeçalho do site!\n Me informe o nome da sua impresa.:`,env);
@@ -269,7 +269,7 @@ await processos(messageText);
               return new Response('Dados recuperados e enviados para o usuário');}catch(error){await sendMessage('Erro ao ler banco de dados',env); return new Response('Erro ao ler banco de dados.',{status:422})}
                 break;
               
-                case 'save': // Inicia o case para a ação 'save'
+        case 'save': // Inicia o case para a ação 'save'
                 try {
                   if (!tabela || !tabela[0] || !tabela[1] || Object.keys(tabela[1]).length === 0) { // Verifica se a tabela e os dados são válidos
                     const mensagem = 'Dados ou tabela inválidos.'; // Mensagem de erro caso a tabela ou os dados sejam inválidos
