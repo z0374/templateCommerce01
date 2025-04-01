@@ -305,7 +305,7 @@ await processos(messageText);
                   `;
               
                   // Executa a inserção dos dados usando os valores fornecidos
-                  await _data.prepare(query).run(tabela[1]); // Usa `Object.values` para passar os dados para os placeholders
+                  await _data.prepare(query).run(content); // Usa `Object.values` para passar os dados para os placeholders
               
                   const sucesso = 'Salvo com sucesso!';
                   await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
