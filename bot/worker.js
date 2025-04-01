@@ -280,8 +280,7 @@ await processos(messageText);
             }
 
             // Verifica se a tabela existe
-            const checkTableQuery = `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`;
-            const tableExists = await _data.prepare(checkTableQuery).bind(tabela[0]).all();
+            const tableExists = await _data.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?;`).bind(tabela[0]).all();
 
             if (tableExists.length === 0) {  // Verifica corretamente se a tabela existe
               // Formata as colunas para a criação da tabela
