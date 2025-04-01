@@ -238,7 +238,7 @@ await processos(messageText);
     }else{await sendMessage('Comando desconhecido\n <i>Tente novamente</i>.', env)}
   }
 
-}catch {await sendMessage('Sem requisição WEBHOOK'); return new Response('ok',{status:200},env)}
+}catch {await sendMessage('Sem requisição WEBHOOK'); return new Response('ok',{status:200})}
 }
 
 	async function cep(numero) {
@@ -395,7 +395,7 @@ async function recUser(userId, update, env) {
     //await sendMessage('Convertido com sucesso!',env);
 
     await sendMessage('Enviando para o armazenamento...',env);
-      await uploadGdrive(fileBuffer, name, image/png, env);
+      await uploadGdrive(fileBuffer, name, 'image/png', env);
     await sendMessage('Arquivo salvo com sucesso!',env);
   }
 
@@ -471,7 +471,7 @@ async function hash(user, password) {
 
   // Criando um hash iterativo da senha (Mega.nz usa 65536 iterações)
   for (let i = 0; i < 65536; i++) {
-      key = await crypto.subtle.digest("SHA-256", key);
+    const  keyHash = await crypto.subtle.digest("SHA-256", key);
   }
 
   const keyBytes = new Uint8Array(key);
