@@ -418,8 +418,6 @@ async function uploadGdrive(file, filename, mimeType, env) {
   const tokens = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
 
-  let uploadAttempts = 0;  // Contador de tentativas
-
   async function getAccessToken() {
     try {
       const response = await fetch('https://oauth2.googleapis.com/token', {
@@ -458,7 +456,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
   formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
   formData.append('file', file, filename);
 
-  while (uploadAttempts < MAX_UPLOAD_ATTEMPTS) {
+  for (let attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
     try {
       const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
         method: 'POST',
@@ -467,7 +465,7 @@ async function uploadGdrive(file, filename, mimeType, env) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload file');
+        throw new Error(`Failed to upload file (HTTP ${response.status})`);
       }
 
       const result = await response.json();
@@ -475,10 +473,9 @@ async function uploadGdrive(file, filename, mimeType, env) {
       return { success: true, message: 'File uploaded successfully', data: result };
 
     } catch (error) {
-      uploadAttempts++;
-      await sendMensage(`Error uploading file (Attempt ${uploadAttempts}): ${error.message}`, env);
+      await sendMensage(`Error uploading file (Attempt ${attempt} of ${MAX_UPLOAD_ATTEMPTS}): ${error.message}`, env);
 
-      if (uploadAttempts >= MAX_UPLOAD_ATTEMPTS) {
+      if (attempt === MAX_UPLOAD_ATTEMPTS) {
         return { success: false, message: 'Max upload attempts reached' };
       }
     }
@@ -486,11 +483,6 @@ async function uploadGdrive(file, filename, mimeType, env) {
 }
 
 
-
-
-
-
-  
 async function normalize(str) {
   return str
     .toLowerCase()
