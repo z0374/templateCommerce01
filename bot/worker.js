@@ -270,50 +270,60 @@ await processos(messageText);
                 break;
               
         case 'save': // Inicia o case para a ação 'save'
-                try {
-                  if (!tabela || !tabela[0] || !tabela[1] || Object.keys(tabela[1]).length === 0) { // Verifica se a tabela e os dados são válidos
-                    const mensagem = 'Dados ou tabela inválidos.'; // Mensagem de erro caso a tabela ou os dados sejam inválidos
-                    await sendMessage(mensagem, env); // Envia a mensagem de erro
-                    return new Response(mensagem, { status: 400 }); // Retorna uma resposta com status 400 (bad request)
-                  }
-              
-                        const checkTableQuery = `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`;
-                        const tableExists = await _data.prepare(checkTableQuery).bind(tabela[0]).all();
+          try {
+            // Verifica se a tabela e os dados são válidos
+            if (!tabela || !tabela[0] || !tabela[1] || Object.keys(tabela[1]).length === 0) {
+              const mensagem = 'Dados ou tabela inválidos.'; // Mensagem de erro caso a tabela ou os dados sejam inválidos
+              await sendMessage(mensagem, env); // Envia a mensagem de erro
+              return new Response(mensagem, { status: 400 }); // Retorna uma resposta com status 400 (bad request)
+            }
 
-                        if (tableExists.results.length === 0) {  // Verifica corretamente se a tabela existe
-                          const createTableQuery = `
-                            CREATE TABLE "${tabela[0]}" (
-                              id INTEGER PRIMARY KEY AUTOINCREMENT, 
-                              ${tabela[1]} 
-                            );
-                          `;
+            // Verifica se a tabela existe
+            const checkTableQuery = `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`;
+            const tableExists = await _data.prepare(checkTableQuery).bind(tabela[0]).all();
 
-                          await _data.prepare(createTableQuery).run();  
-                          await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`, env);  
-                        }
+            if (tableExists.length === 0) {  // Verifica corretamente se a tabela existe
+              // Formata as colunas para a criação da tabela
+              const colunas = tabela[1].split(',').map(coluna => `"${coluna.trim()}" TEXT`).join(", ");
+              const createTableQuery = `
+                CREATE TABLE "${tabela[0]}" (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                  ${colunas}
+                );
+              `;
 
-                  const valores = content.map(() => '?').join(", "); // Usando placeholders ('?') para os valores
-              await sendMessage(valores + ' - ' + tabela[1] + ' - ' + content, env);
-                  // Comando SQL para inserção (não precisa se preocupar com o ID, o banco se encarrega disso)
-                  const query = `
-                    INSERT INTO ${tabela[0]} (${tabela[1]})
-                    VALUES (${valores});
-                  `;
+              await _data.prepare(createTableQuery).run();  
+              await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`, env);  
+            }
+
+            // Cria a string de placeholders para inserção (um "?" para cada valor)
+            const valores = content.map(() => '?').join(", ");
+            
+            // Cria a consulta SQL para inserir os dados
+            const query = `
+              INSERT INTO "${tabela[0]}" (${tabela[1]})
+              VALUES (${valores});
+            `;
+
+            // Envia as informações para o envio
+            await sendMessage(`${valores} - ${tabela[1]} - ${content}`, env);
+
+            // Executa a inserção dos dados usando os valores fornecidos
+            await _data.prepare(query).run(content); // Usa `content` para passar os dados para os placeholders
+
+            const sucesso = 'Salvo com sucesso!';
+            await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
+            return new Response(sucesso, { status: 200 }); // Retorna a resposta com status 200 para indicar sucesso
+
+          } catch (error) { // Se ocorrer um erro, entra no bloco catch
+            const mensagem = 'Erro ao salvar dados no banco de dados'; // Mensagem de erro
+            console.error(error); // Log do erro para depuração
+            await sendMessage(`${mensagem} - ${error.message}`, env); // Envia a mensagem de erro ao usuário
+            return new Response(mensagem, { status: 422 }); // Retorna uma resposta com status 422 (erro no processamento)
+          }
+          break;
+
               
-                  // Executa a inserção dos dados usando os valores fornecidos
-                  await _data.prepare(query).run(content); // Usa `Object.values` para passar os dados para os placeholders
-              
-                  const sucesso = 'Salvo com sucesso!';
-                  await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
-                  return new Response(sucesso, { status: 200 }); // Retorna a resposta com status 200 para indicar sucesso
-              
-                } catch (error) { // Se ocorrer um erro, entra no bloco catch
-                  const mensagem = 'Erro ao salvar dados no banco de dados'; // Mensagem de erro
-                  console.error(error); // Log do erro para depuração
-                  await sendMessage(mensagem+' - '+error, env); // Envia a mensagem de erro ao usuário
-                  return new Response(mensagem, { status: 422 }); // Retorna uma resposta com status 422 (erro no processamento)
-                }
-                break;
               
 
 
