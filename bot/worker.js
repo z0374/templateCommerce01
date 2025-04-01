@@ -293,7 +293,7 @@ await processos(messageText);
                         }
 
                   const valores = content.map(() => '?').join(", "); // Usando placeholders ('?') para os valores
-              await sendMessage(valores + ' - ' + colunas, env);
+              await sendMessage(valores + ' - ' + tabela[1] + ' - ' + content, env);
                   // Comando SQL para inserção (não precisa se preocupar com o ID, o banco se encarrega disso)
                   const query = `
                     INSERT INTO ${tabela[0]} (${tabela[1]})
