@@ -390,9 +390,9 @@ async function recUser(userId, update, env) {
       const fileBuffer = await recFile(fileId,env);
     await sendMessage('Arquivo recuperado com sucesso!',env);
 
-    //await sendMessage('convertendo arquivo...',env);
-    //  const webpBuffer = await convertToWebP(fileBuffer);
-    //await sendMessage('Convertido com sucesso!',env);
+    await sendMessage('convertendo arquivo...',env);
+      const webpBuffer = await convertToWebP(fileBuffer,env);
+    await sendMessage('Convertido com sucesso!',env);
 
     await sendMessage('Enviando para o armazenamento...',env);
     const gDrive =  await uploadGdrive(fileBuffer, name, 'image/png', env);
@@ -414,13 +414,36 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
 }
 
-
+async function convertImageToWebP(imageUrl, env) {
+  try {
+    await sendMessage('Baixando imagem do link fornecido...', env);
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      throw new Error(`Erro ao baixar a imagem: ${response.statusText}`);
+    }
+    const imageBlob = await response.blob();
+    
+    await sendMessage('Imagem recebida, iniciando conversão...', env);
+    const image = await Image.decode(imageBlob);
+    const webpImage = await image.encode('webp');
+    await sendMessage('Imagem convertida com sucesso!', env);
+    
+    return new Response(webpImage, {
+      headers: {
+        'Content-Type': 'image/webp',
+      },
+    });
+  } catch (error) {
+    await sendMessage(`Erro ao processar a imagem: ${error.message}`, env);
+    return new Response(`Erro ao processar a imagem: ${error.message}`, { status: 500 });
+  }
+}
 
 async function uploadGdrive(file, filename, mimeType, env) {
   const MAX_UPLOAD_ATTEMPTS = 3;
   const tokens = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
-
+// 
   async function getAccessToken() {
     try {
       const response = await fetch('https://oauth2.googleapis.com/token', {
@@ -439,10 +462,10 @@ async function uploadGdrive(file, filename, mimeType, env) {
       }
 
       const data = await response.json();
-      await sendMensage('Access token retrieved successfully', env);
+      await sendMessage('Access token retrieved successfully', env);
       return data.access_token || null;
     } catch (error) {
-      await sendMensage(`Error retrieving access token: ${error.message}`, env);
+      await sendMessage(`Error retrieving access token: ${error.message}`, env);
       return null;
     }
   }
@@ -474,11 +497,11 @@ async function uploadGdrive(file, filename, mimeType, env) {
       }
 
       const result = await response.json();
-      await sendMensage('File uploaded successfully', env);
+      await sendMessage('File uploaded successfully', env);
       return new Response(JSON.stringify({ success: true, message: 'File uploaded successfully', data: result }), { status: 200 });
 
     } catch (error) {
-      await sendMensage(`Error uploading file (Attempt ${attempt} of ${MAX_UPLOAD_ATTEMPTS}): ${error.message}`, env);
+      await sendMessage(`Error uploading file (Attempt ${attempt} of ${MAX_UPLOAD_ATTEMPTS}): ${error.message}`, env);
 
       if (attempt === MAX_UPLOAD_ATTEMPTS) {
         return new Response(JSON.stringify({ success: false, message: 'Max upload attempts reached' }), { status: 500 });
