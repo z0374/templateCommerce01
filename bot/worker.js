@@ -277,20 +277,22 @@ await processos(messageText);
                     return new Response(mensagem, { status: 400 }); // Retorna uma resposta com status 400 (bad request)
                   }
               
-                  const checkTableQuery = `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`;  // Verifica se a tabela existe no banco de dados
-                  const tableExists = await _data.prepare(checkTableQuery).bind(tabela[0]).all(); // Executa a consulta SQL
-              
-                  if (tableExists.length === 0) { // Se a tabela não existir, cria a tabela
-                    const colunas = tabela[1].map(coluna => `${coluna} TEXT`).join(", ");
-                    const createTableQuery = `
-                      CREATE TABLE ${tabela[0]} (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT, // Criação de um campo 'id' como chave primária e autoincrementável
-                        ${colunas} // As colunas criadas dinamicamente com base nos dados
-                      );
-                    `;
-                    await _data.prepare(createTableQuery).run();  // Executa a criação da tabela
-                    await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`); // Log no console indicando suces,envso
-                  }
+                        const checkTableQuery = `SELECT name FROM sqlite_master WHERE type='table' AND name=?;`;
+                        const tableExists = await _data.prepare(checkTableQuery).bind(tabela[0]).all();
+
+                        if (tableExists.results.length === 0) {  // Verifica corretamente se a tabela existe
+                          const colunas = tabela[1].map(coluna => `"${coluna}" TEXT`).join(", ");
+                          const createTableQuery = `
+                            CREATE TABLE "${tabela[0]}" (
+                              id INTEGER PRIMARY KEY AUTOINCREMENT, 
+                              ${colunas} 
+                            );
+                          `;
+
+                          await _data.prepare(createTableQuery).run();  
+                          await sendMessage(`Tabela ${tabela[0]} criada com sucesso.`, env);  
+                        }
+
               
                   // Prepara a consulta para inserir dados na tabela
                   const colunas = tabela[1].join(", ");
