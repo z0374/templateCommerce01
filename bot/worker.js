@@ -395,7 +395,7 @@ async function recUser(userId, update, env) {
     await sendMessage('Convertido com sucesso!',env);
 
     await sendMessage('Enviando para o armazenamento...',env);
-    const gDrive =  await uploadGdrive(fileBuffer, name, 'image/png', env);
+    const gDrive =  await uploadGdrive(fileBuffer, name+'.webp', 'image/png', env);
     await sendMessage('Arquivo salvo com sucesso!',env);
 
     return gDrive;
