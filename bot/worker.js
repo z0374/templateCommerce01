@@ -131,7 +131,8 @@ await processos(messageText);
                         break;
 					  
                   case 'waiting_nome_cabecalho':
-                      await dados('save',messageText,'config',userId);  
+                      const logo = [messageText, 'text'];
+                      userState.select.push(await dados('save',messageText,['assets','nome, tipo'],userId));
                       userState.state = 'waiting_acessibilidade_cabecalho';  
                       await saveUserState(env, userId, userState);  
                       await sendMessage(`Ok sr. ${userName}, por fim me descreva a logo da sua impresa!\n(fins de acessibilidade).:`,env);
