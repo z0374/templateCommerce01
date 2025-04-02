@@ -426,7 +426,7 @@ async function recUser(userId, update, env) {
       const gDrive =  await uploadGdrive(fileBuffer, name, 'image/png', env);
       await sendMessage('Arquivo salvo com sucesso!', env);
 
-      return gDrive;
+      return gDrive.toString();
     }catch(error){  await sendMessage('Alerta.: ' + error, env); return new Response('Alerta.: '+error, {status:400}); }
   }
 
