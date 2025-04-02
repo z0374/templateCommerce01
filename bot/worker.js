@@ -335,7 +335,7 @@ if (tableExists.results.length === 0) {  // Verifica se a tabela existe
             const sucesso = 'Salvo com sucesso!';
             await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
             const lastInsertId = await _data.prepare("SELECT last_insert_rowid() AS id").first()
-            return lastInsertId.toString();
+            return lastInsertId.id.toString();
 
           } catch (error) { // Se ocorrer um erro, entra no bloco catch
             const mensagem = 'Erro ao salvar dados no banco de dados'; // Mensagem de erro
