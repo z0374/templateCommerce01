@@ -184,8 +184,18 @@ await processos(messageText);
                           break;
 
                     case 'waiting_confirmBotao_cabecalho':
-                      await yesOrNo(messageText);
-                      await saveUserState(env, userId, null);
+                      switch(messageText){
+                        case '/SIM':
+                          const bt = userState.select.length - 1;
+                          userState.select[bt].push(  await dados('save', userState.select[bt].toString(), ['assets','nome, tipo'], userId)  );
+                            break;
+                        
+                        case '/NÃO':
+                            
+                            break;
+                      }
+                      userState.state = 'waiting_urlBotao_cabecalho';
+                      await saveUserState(env, userId, userState);
                         break;
                           
                     case 'waiting_confirm_cabecalho':
