@@ -319,8 +319,8 @@ if (tableExists.length === 0) {  // Verifica se a tabela existe
                     }
             // Cria a consulta SQL para inserir os dados
             const query = `
-              INSERT INTO "${tabela[0]}" (${String(tabela[1])})
-              VALUES (${valores});
+              INSERT INTO "assets" (nome, tipo)
+              VALUES (?, ?)
             `;
 
             // Envia as informações para o envio colunas
