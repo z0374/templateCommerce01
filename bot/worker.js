@@ -137,17 +137,61 @@ await processos(messageText);
                       await saveUserState(env, userId, userState);  
                       await sendMessage(`Ok sr. ${userName}, por fim me descreva a logo da sua impresa!\n(fins de acessibilidade).:`,env);
                         break;
-					  
-				case 'waiting_acessibilidade_cabecalho':
-					userState.state = 'waiting_confirm_cabecalho';
-					await saveUserState(env, userId, userState);
-					await sendMessage(`Ok sr. ${userName}, `,env);
-						break;
-					  
-			case 'waiting_confirm_cabecalho':
-				await yesOrNo(messageText);
-				await saveUserState(env, userId, null);
-					break;
+
+                  case 'waiting_acessibilidade_cabecalho':
+                      const acessibilidade = [messageText, 'text'];
+                      userState.select.push(await dados('save', acessibilidade, ['assets','nome, tipo'], userId));
+                      userState.state = 'waiting_botao_cabecalho';
+                      await saveUserState(env, userId, userState);
+                      await sendMessage(`Ok sr. ${userName}, `,env);
+                        break;
+                  
+                  case 'waiting_botao_cabecalho':
+                    switch(messageText){
+
+                    case '/adicionarBotão':
+                      userState.state = 'waiting_nomeBotao_cabecalho';
+                      await saveUserState(env, userId, userState);
+                      await sendMessage(`Certo srª. ${userName}\n Informe o nome do botão que deseja adicionar.:`,env);
+                        break;
+                    
+                    case '/continuar':
+                      userState.state = 'waiting_confirm_cabecalho';
+                      await saveUserState(env, userId, userState);
+                      await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n`, env);
+                      await sendMessage(`esta correto? /SIM | /NÂO`, env)
+                        break;
+                    
+                        default:
+                          await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotão | /continuar`, env);
+                    }
+                        break;
+
+                    case 'waiting_nomeBotao_cabecalho':
+                      userState.select.push([messageText]);
+                      userState.state = 'waiting_urlBotao_cabecalho';
+                      await saveUserState(env, userId, userState);
+                      await sendMessage(`Certo srª. ${userName}\n Informe a URL do botão que deseja adicionar.:`,env);
+                          break;
+                    
+                    case 'waiting_urlBotao_cabecalho':
+                      const bt = userState.select.length - 1;
+                      userState.select[bt].push(messageText);
+                      userState.state = 'waiting_confirmBotao_cabecalho';
+                      await saveUserState(env, userId, userState);
+                      await sendMessage(`Certo srª. ${userName}\n Por gentileza confirme se o botão esta correto.:\nRótulo - ${userState.select[bt][0]}\nURL - ${userState.select[bt][1]}`,env);
+                      await sendMessage(`Esta correto? /SIM | /NÃO`,env);
+                          break;
+
+                    case 'waiting_confirmBotao_cabecalho':
+                      await yesOrNo(messageText);
+                      await saveUserState(env, userId, null);
+                        break;
+                          
+                    case 'waiting_confirm_cabecalho':
+                      await yesOrNo(messageText);
+                      await saveUserState(env, userId, null);
+                        break;
 
 		      default:
 				const mensagem = 'Comando ou estado de usuário desconhecido.';
