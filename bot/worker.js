@@ -306,7 +306,7 @@ if (tableExists.length === 0) {  // Verifica se a tabela existe
   }
 } else {
   // A tabela já existe, envia uma mensagem de confirmação
-  await sendMessage(`Tabela "${tabela[0]}" já existe.`, env);
+ // await sendMessage(`Tabela "${tabela[0]}" já existe.`, env);
 }
 
 
@@ -319,15 +319,15 @@ if (tableExists.length === 0) {  // Verifica se a tabela existe
                     }
             // Cria a consulta SQL para inserir os dados
             const query = `
-              INSERT INTO "assets" (nome, tipo)
-              VALUES (?, ?)
+              INSERT INTO "${tabela[0]}" (${String(tabela[1])})
+              VALUES (${valores});
             `;
 
             // Envia as informações para o envio colunas
             await sendMessage(`${valores} - ${tabela[1]} - ${content}\n\n${query}`, env);
 
             // Executa a inserção dos dados usando os valores fornecidos
-            await _data.prepare(query).run(content); // Usa `content` para passar os dados para os placeholders
+            await _data.prepare(query).run(content.toString()); // Usa `content` para passar os dados para os placeholders
 
             const sucesso = 'Salvo com sucesso!';
             await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
