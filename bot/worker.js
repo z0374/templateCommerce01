@@ -318,7 +318,7 @@ if (tableExists.results.length === 0) {  // Verifica se a tabela existe
                       return new Response(mensagem, { status: 400 }); // Retorna resposta com erro
                     }
             // Cria a consulta SQL para inserir os dados
-            const query = "INSERT INTO " + tabela[0] + " (" + tabela[1] + "TEXT) VALUES (" + valores + ")";
+            const query = "INSERT INTO " + tabela[0] + " (" + tabela[1] + ") VALUES (" + valores + ")";
             ;
 
             // Envia as informações para o envio colunas
