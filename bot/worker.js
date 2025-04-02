@@ -318,14 +318,14 @@ if (tableExists.results.length === 0) {  // Verifica se a tabela existe
                       return new Response(mensagem, { status: 400 }); // Retorna resposta com erro
                     }
             // Cria a consulta SQL para inserir os dados
-            const query = "INSERT INTO " + tabela[0] + " (" + tabela[1] + ") VALUES (" + valores + ")";
+            const query = "INSERT INTO " + tabela[0] + " (" + tabela[1] + "TEXT) VALUES (" + valores + ")";
             ;
 
             // Envia as informações para o envio colunas
             await sendMessage(`${valores} - ${tabela[1]}\n - ${content}\n\n${query}`, env);
 
             // Executa a inserção dos dados usando os valores fornecidos
-            await _data.prepare(query).bind(content).run(); // Usa `content` para passar os dados para os placeholders
+            await _data.prepare(query).bind(...content).run(); // Usa `content` para passar os dados para os placeholders
 
             const sucesso = 'Salvo com sucesso!';
             await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
