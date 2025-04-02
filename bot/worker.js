@@ -325,7 +325,7 @@ if (tableExists.results.length === 0) {  // Verifica se a tabela existe
             await sendMessage(`${valores} - ${tabela[1]}\\n - ${content}\n\n${query}`, env);
 
             // Executa a inserção dos dados usando os valores fornecidos
-            await _data.prepare(query).run(content.toString()); // Usa `content` para passar os dados para os placeholders
+            await _data.prepare(query).run(...content); // Usa `content` para passar os dados para os placeholders
 
             const sucesso = 'Salvo com sucesso!';
             await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
