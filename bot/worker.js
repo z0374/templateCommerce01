@@ -120,22 +120,22 @@ await processos(messageText);
                   case 'waiting_logo_cabecalho':
                     //await sendMessage(messageText,env);
 
-                    const agora = new Date();
-					          const img = await image(messageText, 'logoDoCabeçalho'+ await normalize(agora.toISOString().split('T')[0].replace(/-/g, '') + agora.getMinutes().toString().padStart(2, '0')), env);
-                    const logo = [img, 'img'];
-					          const coluns = 'nome,tipo';
-                    userState.data.push(await dados('save',logo,['assets',coluns],userId));
-                    userState.state = 'waiting_nome_cabecalho';	//userState.dados.push(logo);
-                    await saveUserState(env, userId, userState);  
-                    await sendMessage(`Certo sr. ${userName}, vamos continuar com a configuração do cabeçalho do site!\n Me informe o nome da sua impresa.:`,env);
-                      break;
+                      const agora = new Date();
+                      const img = await image(messageText, 'logoDoCabeçalho'+ await normalize(agora.toISOString().split('T')[0].replace(/-/g, '') + agora.getMinutes().toString().padStart(2, '0')), env);
+                      const logo = [img, 'img'];
+                      const coluns = 'nome,tipo';
+                      userState.select.push(await dados('save',logo,['assets',coluns],userId));
+                      userState.state = 'waiting_nome_cabecalho';	//userState.dados.push(logo);
+                      await saveUserState(env, userId, userState);  
+                      await sendMessage(`Certo sr. ${userName}, vamos continuar com a configuração do cabeçalho do site!\n Me informe o nome da sua impresa.:`,env);
+                        break;
 					  
                   case 'waiting_nome_cabecalho':
-                    await dados('save',messageText,'config',userId);  
-                    userState.state = 'waiting_acessibilidade_cabecalho';  
-                    await saveUserState(env, userId, userState);  
-                    await sendMessage(`Ok sr. ${userName}, por fim me descreva a logo da sua impresa!\n(fins de acessibilidade).:`,env);
-					  break;
+                      await dados('save',messageText,'config',userId);  
+                      userState.state = 'waiting_acessibilidade_cabecalho';  
+                      await saveUserState(env, userId, userState);  
+                      await sendMessage(`Ok sr. ${userName}, por fim me descreva a logo da sua impresa!\n(fins de acessibilidade).:`,env);
+                        break;
 					  
 				case 'waiting_acessibilidade_cabecalho':
 					userState.state = 'waiting_confirm_cabecalho';
