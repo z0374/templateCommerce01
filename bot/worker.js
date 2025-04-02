@@ -319,12 +319,12 @@ if (tableExists.length === 0) {  // Verifica se a tabela existe
                     }
             // Cria a consulta SQL para inserir os dados
             const query = `
-              INSERT INTO "${tabela[0]}" (${String(tabela[1])})
+              INSERT INTO "${tabela[0]}" (${tabela[1]})
               VALUES (${valores});
             `;
 
             // Envia as informações para o envio colunas
-            await sendMessage(`${valores} - ${tabela[1]} - ${content}\n\n${query}`, env);
+            await sendMessage(`${valores} - ${tabela[1]}\\n - ${content}\n\n${query}`, env);
 
             // Executa a inserção dos dados usando os valores fornecidos
             await _data.prepare(query).run(content.toString()); // Usa `content` para passar os dados para os placeholders
