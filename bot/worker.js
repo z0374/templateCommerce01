@@ -124,7 +124,7 @@ await processos(messageText);
 					          const img = await image(messageText, 'logoDoCabeçalho'+ await normalize(agora.toISOString().split('T')[0].replace(/-/g, '') + agora.getMinutes().toString().padStart(2, '0')), env);
                     const logo = [img, 'img'];
 					          const coluns = 'nome,tipo';
-                    await dados('save',logo,['assets',coluns],userId);  
+                    userState.data.push(await dados('save',logo,['assets',coluns],userId));
                     userState.state = 'waiting_nome_cabecalho';	//userState.dados.push(logo);
                     await saveUserState(env, userId, userState);  
                     await sendMessage(`Certo sr. ${userName}, vamos continuar com a configuração do cabeçalho do site!\n Me informe o nome da sua impresa.:`,env);
@@ -260,8 +260,13 @@ await processos(messageText);
     const _data = env.Data;
     try{
     switch(mode){
-      
         case 'read':
+            const query = ''
+
+            break;
+
+
+        case 'readLimit':
           try{
               const query = `SELECT * FROM ${tabela[0]} LIMIT ? OFFSET ?`; //userName - dateAniversary - auth[PIN, PUK]
               const params = [10, tabela[1]];
@@ -329,7 +334,8 @@ if (tableExists.results.length === 0) {  // Verifica se a tabela existe
 
             const sucesso = 'Salvo com sucesso!';
             await sendMessage(sucesso, env); // Envia a mensagem de sucesso para o usuário
-            return new Response(sucesso, { status: 200 }); // Retorna a resposta com status 200 para indicar sucesso
+            const lastInsertId = await _data.prepare("SELECT last_insert_rowid() AS id").first()
+            return lastInsertId.toString();
 
           } catch (error) { // Se ocorrer um erro, entra no bloco catch
             const mensagem = 'Erro ao salvar dados no banco de dados'; // Mensagem de erro
