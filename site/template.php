@@ -1,4 +1,4 @@
-<?php  //users - site - assets - config
+<?php  //users - assets - config
 $bgbody='';$title='farm';
 require ('../WaranasLibrary/waranas.php');
  $section=[];$grids=[];
