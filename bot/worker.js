@@ -283,7 +283,7 @@ await processos(messageText);
 const tableExists = await _data.prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?;`).bind(tabela[0]).all();
 
 // Se a tabela não existir, cria a tabela
-if (tableExists.length === 0) {  // Verifica se a tabela existe
+if (tableExists.results.length === 0) {  // Verifica se a tabela existe
   try {
     // Formata as colunas para a criação da tabela
     const colunas = tabela[1].split(',').map(coluna => `"${coluna.trim()}" TEXT`).join(", ");
