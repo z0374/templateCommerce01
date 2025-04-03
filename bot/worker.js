@@ -558,39 +558,37 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
   }catch(error){  await sendMessage('Erro: ' + error, env); return new Response('Erro: ' + error,{status: 400});  }
 }
+async function getAccessToken() {
+  try {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        refresh_token: GOOGLE_REFRESH_TOKEN,
+        grant_type: 'refresh_token'
+      })
+    });
 
+    if (!response.ok) {
+      throw new Error('Failed to retrieve access token');
+    }
+
+    const data = await response.json();
+    //await sendMessage('Access token retrieved successfully', env);
+    return data.access_token || null;
+  } catch (error) {
+    await sendMessage(`Error retrieving access token: ${error.message}`, env);
+    return null;
+  }
+}
 async function uploadGdrive(fileUrl, filename, mimeType, env) {
         const MAX_UPLOAD_ATTEMPTS = 3;
         const tokens = env.tokens_G;
         const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
-
-        async function getAccessToken() {
-          try {
-            const response = await fetch('https://oauth2.googleapis.com/token', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: new URLSearchParams({
-                client_id: GOOGLE_CLIENT_ID,
-                client_secret: GOOGLE_CLIENT_SECRET,
-                refresh_token: GOOGLE_REFRESH_TOKEN,
-                grant_type: 'refresh_token'
-              })
-            });
-
-            if (!response.ok) {
-              throw new Error('Failed to retrieve access token');
-            }
-
-            const data = await response.json();
-            //await sendMessage('Access token retrieved successfully', env);
-            return data.access_token || null;
-          } catch (error) {
-            await sendMessage(`Error retrieving access token: ${error.message}`, env);
-            return null;
-          }
-        }
-
         const accessToken = await getAccessToken();
+
         if (!accessToken) {
           return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
         }
@@ -649,7 +647,30 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
       }
 }
 
+          async function downloadGdrive(fileId,env){
+            const MAX_UPLOAD_ATTEMPTS = 3;
+            const tokens = env.tokens_G;
+            const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
+            const accessToken = await getAccessToken();
+            
+            if (!accessToken) {
+              return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
+            }
 
+            const file = await fetch('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media',{
+              headers: {
+                Authorization: 'Bearer '+ accessToken,
+              },
+            });
+            if(!file.ok){throw new Error(`Failed to Download file (HTTP ${file.status})`)} 
+              const result = await file.blob();
+                return new Response(result, {
+                  headers: {
+                    "Content-Type": "application/octet-stream",
+                    "content-Disposition": "attachment; filename=" + fileId,
+                  },
+                });
+          }
 
 
 
