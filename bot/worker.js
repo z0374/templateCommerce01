@@ -186,7 +186,7 @@ await processos(messageText);
                     case 'waiting_confirmBotao_cabecalho':
                       switch(messageText){
                         case '/SIM':
-                          const bt = userState.select.length - 1;
+                          bt = userState.select.length - 1;
                           userState.select[bt].push(  await dados('save', [userState.select[bt].toString(),'bt'], ['assets','nome, tipo'], userId)  );
                             break;
                         
