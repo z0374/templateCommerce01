@@ -157,9 +157,22 @@ await processos(messageText);
                     
                     case '/continuar':
                       userState.state = 'waiting_confirm_cabecalho';
-                      await saveUserState(env, userId, userState);
-                      await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n`, env);
+                      const dataId = userState.select;
+                      const dataLogo = await dados('read',dataId[0],'assets',userId);
+                      const dataName = await dados('read',dataId[1],'assets',userId);
+                      const dataAcss = await dados('read',dataId[2],'assets',userId);
+                      let databtn;
+                          for(let i;i>dataId[3];i++){
+                            const data3 = await dados('read',dataId[3],tabela,userId)['nome'];
+                            databtn += `Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
+                            
+                          }
+
+                      const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn - data[4][1]}]`
+                      await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
+
                       await sendMessage(`esta correto? /SIM | /NÂO`, env)
+                      await saveUserState(env, userId, userState);
                         break;
                     
                         default:
@@ -186,8 +199,12 @@ await processos(messageText);
                     case 'waiting_confirmBotao_cabecalho':
                       switch(messageText){
                         case '/SIM':
-                          bt = userState.select.length - 1;
-                          userState.select[bt].push(  await dados('save', [userState.select[bt].toString(),'bt'], ['assets','nome, tipo'], userId)  );
+                          btSelect = userState.select.length - 1;
+                          const btData = await dados('save', [userState.select[btSelect].toString(),'btn'], ['assets','nome, tipo'], userId);
+                          userState.select[btSelect] = [btData];
+                          userState.state = 'waiting_botao_cabecalho';
+                          await saveUserState(env, userId, userState);
+                          await sendMessage(`Deseja adicionar outro botão?\n /adicionarBotão /continuar`, env);
                             break;
                         
                         case '/NÃO':
@@ -321,8 +338,13 @@ await processos(messageText);
     try{
     switch(mode){
         case 'read':
-            const query = ''
-
+          const messageErro = 'Nenhum dado encontrado';
+          try{
+          const _tabela = tabela[0] || tabela;
+            const query = `SELECT * FROM ${_tabela} WHERE id = ?`;
+            const data = await _data.prepare(query).bind(content).first();
+            if(data){return data;}else{throw new Error(messageErro);}
+          }catch(error){await sendMessage(messageErro + ': ' + error, env); return messageErro + ': ' + error; }
             break;
 
 
@@ -433,7 +455,7 @@ async function sendMessage(message, env) {
     const json = await response.json();
     if (!json.ok) {
       console.error("Erro ao enviar mensagem:", json);
-      return new Response("Erro ao sendMessage mensagem", { status: 500 });
+      return new Response("Erro ao enviar mensagem", { status: 500 });
     }
 
     return new Response("Mensagem enviada com sucesso!", { status: 200 });
@@ -441,6 +463,34 @@ async function sendMessage(message, env) {
     console.error("Erro ao conectar com a API do Telegram:", error);
     return new Response("Erro ao conectar com a API do Telegram", { status: 500 });
   }
+}
+
+async function sendMidia(midia, env) {
+  await new Promise(resolve => setTimeout(resolve, 500));
+    const formData = new FormData();
+    formData.append('chat_id', -4774731816);
+    formData.append('document', midia[0] || midia);
+    formData.append('caption', midia[1] || '');
+    formData.append('parse_mode', 'HTML');
+    const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendDocument`;
+    
+      try{
+          const response = await fetch(telegramUrl, {
+            method: 'Post',
+            headers: {
+                'content-Type': 'application/json'
+            },
+            body: formData,
+      });
+        const result = await response.json();
+          if(!json.ok){
+            console.error("Erro ao enviar arquivo", json);
+            return new Response("Erro ao enviar arquivo", { status: 500 });
+          }return new Response("Arquivo enviado com sucesso!",{status: 200});
+    }catch(error){
+      console.error("Erro ao conectar com a API do Telegram:", error);
+      return new Response("Erro ao conectar com a API do Telegram", { status: 500 });
+    }
 }
 
 async function loadUserState(env, userId) {
