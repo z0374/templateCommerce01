@@ -143,7 +143,7 @@ await processos(messageText);
                       userState.select.push(await dados('save', acessibilidade, ['assets','nome, tipo'], userId));
                       userState.state = 'waiting_botao_cabecalho';
                       await saveUserState(env, userId, userState);
-                      await sendMessage(`Ok sr. ${userName}, `,env);
+                      await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotão | /continuar`, env);
                         break;
                   
                   case 'waiting_botao_cabecalho':
@@ -187,15 +187,20 @@ await processos(messageText);
                       switch(messageText){
                         case '/SIM':
                           const bt = userState.select.length - 1;
-                          userState.select[bt].push(  await dados('save', userState.select[bt].toString(), ['assets','nome, tipo'], userId)  );
+                          userState.select[bt].push(  await dados('save', [userState.select[bt].toString(),'bt'], ['assets','nome, tipo'], userId)  );
                             break;
                         
                         case '/NÃO':
-                            
+                          await sendMessage(`Sr. ${userName}, deseja /cancelar ou /reiniciar ?`, env)
                             break;
-                      }
-                      userState.state = 'waiting_urlBotao_cabecalho';
-                      await saveUserState(env, userId, userState);
+                        
+                        case '/reiniciar':
+                          const bt = userState.select.length - 1;
+                          userState.select[bt]=[];
+                          userState.state = 'waiting_nomeBotao_cabecalho';
+                          await saveUserState(env, userId, userState);
+                          await sendMessage(`Certo srª. ${userName}\n Informe o nome do botão que deseja adicionar.:`, env);
+                            }
                         break;
                           
                     case 'waiting_confirm_cabecalho':
