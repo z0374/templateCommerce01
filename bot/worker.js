@@ -701,12 +701,6 @@ export default {
 };
 
 async function downloadGdrive(fileId, env) {
-  const tokensG = env.tokens_G;
-  if (!tokensG || tokensG.split(',').length < 4) {
-    throw new Error('Invalid tokens_G format');
-  }
-
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN] = tokensG.split(',');
   const MAX_DOWNLOAD_ATTEMPTS = 3;
   const RETRY_DELAY = 2000;
   const accessToken = await getAccessToken(env);
