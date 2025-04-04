@@ -676,30 +676,6 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
       }
 }
 
-export default {
-  async fetch(request, env) {
-    try {
-      const url = new URL(request.url);
-      const fileId = url.searchParams.get("fileId"); // Obtém o ID do arquivo da URL
-
-      if (!fileId) {
-        return new Response("File ID is required", { status: 400 });
-      }
-
-      const fileBuffer = await downloadGdrive(fileId, env);
-      return new Response(fileBuffer, {
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "Content-Disposition": `attachment; filename="${fileId}.bin"`,
-        },
-      });
-
-    } catch (error) {
-      return new Response(`Error: ${error.message}`, { status: 500 });
-    }
-  },
-};
-
 async function downloadGdrive(fileId, env) {
   const MAX_DOWNLOAD_ATTEMPTS = 3;
   const RETRY_DELAY = 2000;
