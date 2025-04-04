@@ -566,7 +566,7 @@ async function recUser(userId, update, env) {
   }catch(error){  await sendMessage('Erro: ' + error, env); return new Response('Erro: ' + error,{status: 400});  }
 }
 
-async function getAccessToken() {
+async function getAccessToken(env) {
   const tokens_G = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
   try {
@@ -593,11 +593,12 @@ async function getAccessToken() {
     return null;
   }
 }
-async function uploadGdrive(fileUrl, filename, mimeType) {
+
+async function uploadGdrive(fileUrl, filename, mimeType,env) {
   const tokens_G = env.tokens_G;
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
         const MAX_UPLOAD_ATTEMPTS = 3;
-        const accessToken = await getAccessToken();
+        const accessToken = await getAccessToken(env);
 
         if (!accessToken) {
           return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
@@ -662,7 +663,7 @@ async function downloadGdrive(fileId, env) {
   const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
   const MAX_UPLOAD_ATTEMPTS = 3;
   const RETRY_DELAY = 2000; // 2 segundos
-  const accessToken = await getAccessToken();
+  const accessToken = await getAccessToken(env);
 
   if (!accessToken) {
       throw new Error('Failed to retrieve access token');
