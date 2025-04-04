@@ -60,7 +60,7 @@ if(users === null && messageText == '/index' || users === null && messageText ==
      }*/
 await processos(messageText);
     async function processos(messageText){  //Define a função processos com o texto da mensagem como parâmetro
-      if(userState.procesCont>3){userState=null; await saveUserState(env, userId, userState);return new Response('Falha na requisição');} //Verifica se a quantidade de processos é maior que 3. Se for falha a requisição
+      if(userState.procesCont>3){await sendMessage('falha na requisição', env); userState=null; await saveUserState(env, userId, userState);return new Response('Falha na requisição');} //Verifica se a quantidade de processos é maior que 3. Se for falha a requisição
       else{userState.procesCont++;} //Se não for adiciona 1 ao contador de processos
       //await sendMessage('log3',env);
       if(userState!==null || messageText!=='') {  //verifica se o estado do usuário e nulo ou se o texto da mensagem é vazio
@@ -142,45 +142,47 @@ await processos(messageText);
                       const acessibilidade = [messageText, 'text'];
                       userState.select.push(await dados('save', acessibilidade, ['assets','nome, tipo'], userId));
                       userState.state = 'waiting_botao_cabecalho';
-                      await saveUserState(env, userId, userState);
+                      await saveUserState(env, userId, userState);// null
                       await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotao | /continuar`, env);
                         break;
                   
                   case 'waiting_botao_cabecalho':
+                    await sendMessage('log',env);
                     switch(messageText){
 
-                    case '/adicionarBotao':
-                      userState.state = 'waiting_nomeBotao_cabecalho';
-                      await saveUserState(env, userId, userState);
-                      await sendMessage(`Certo srª. ${userName}\n Informe o nome do botão que deseja adicionar.:`,env);
-                        break;
-                    
-                    case '/continuar':
-                      userState.state = 'waiting_confirm_cabecalho';
-                      const dataId = userState.select;
-                      try{
-                          const logoId = await dados('read',dataId[0],'assets',userId)['nome']; await sendMessage('Id logo OK',env);
-                              const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
-                          const dataName = await dados('read',dataId[1],'assets',userId)['nome']; await sendMessage('nome OK',env);
-                          const dataAcss = await dados('read',dataId[2],'assets',userId)['nome']; await sendMessage('acessibilidade OK',env);
-                          let databtn='';
-                          if(dataId[3]){
-                              for(let i=0;i<dataId[3].length;i++){
-                                const data3 = await dados('read',dataId[3][i],'assets',userId)['nome'];
-                                databtn += `${i+1} - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
-                              }}
+                      case '/adicionarBotao':
+                        userState.state = 'waiting_nomeBotao_cabecalho';
+                        await saveUserState(env, userId, userState);
+                        await sendMessage(`Certo srª. ${userName}\n Informe o nome do botão que deseja adicionar.:`,env);
+                          break;
+                      
+                      case '/continuar':
+                        await sendMessage('log',env);
+                        userState.state = 'waiting_confirm_cabecalho';
+                        const dataId = userState.select;
+                        try{
+                            const logoId = await dados('read',dataId[0],'assets',userId)['nome']; await sendMessage('Id logo OK',env);
+                                const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
+                            const dataName = await dados('read',dataId[1],'assets',userId)['nome']; await sendMessage('nome OK',env);
+                            const dataAcss = await dados('read',dataId[2],'assets',userId)['nome']; await sendMessage('acessibilidade OK',env);
+                            let databtn='';
+                            if(dataId[3]){
+                                for(let i=0;i<dataId[3].length;i++){
+                                  const data3 = await dados('read',dataId[3][i],'assets',userId)['nome'];
+                                  databtn += `${i+1} - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
+                                }}
 
-                          const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn}]`;
-                          await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
-                          await sendMidia([dataLogo,dataAcss],env);
-                      }catch(error){await sendMessage(error,env);}
+                            const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn}]`;
+                            await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
+                            await sendMidia([dataLogo,dataAcss],env);
+                        }catch(error){await sendMessage(error,env);}
 
-                      await sendMessage(`esta correto? /SIM | /NÂO`, env)
-                      await saveUserState(env, userId, userState);
-                        break;
-                    
-                        default:
-                          await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotão | /continuar`, env);
+                        await sendMessage(`esta correto? /SIM | /NÂO`, env)
+                        await saveUserState(env, userId, userState);
+                          break;
+                      
+                          default:
+                            await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotão | /continuar`, env);
                     }
                         break;
 
