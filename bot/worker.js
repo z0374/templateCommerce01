@@ -676,54 +676,84 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
       }
 }
 
+export default {
+  async fetch(request, env) {
+    try {
+      const url = new URL(request.url);
+      const fileId = url.searchParams.get("fileId"); // Obtém o ID do arquivo da URL
+
+      if (!fileId) {
+        return new Response("File ID is required", { status: 400 });
+      }
+
+      const fileBuffer = await downloadGdrive(fileId, env);
+      return new Response(fileBuffer, {
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "Content-Disposition": `attachment; filename="${fileId}.bin"`,
+        },
+      });
+
+    } catch (error) {
+      return new Response(`Error: ${error.message}`, { status: 500 });
+    }
+  },
+};
+
 async function downloadGdrive(fileId, env) {
   const tokensG = env.tokens_G;
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokensG.split(',');
-  const MAX_UPLOAD_ATTEMPTS = 3;
-  const RETRY_DELAY = 2000; // 2 segundos
+  if (!tokensG || tokensG.split(',').length < 4) {
+    throw new Error('Invalid tokens_G format');
+  }
+
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN] = tokensG.split(',');
+  const MAX_DOWNLOAD_ATTEMPTS = 3;
+  const RETRY_DELAY = 2000;
   const accessToken = await getAccessToken(env);
 
   if (!accessToken) {
-      throw new Error('Failed to retrieve access token');
+    throw new Error('Failed to retrieve access token');
   }
 
-  for (let attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
-      try {
-          // Obtendo metadados para pegar o nome do arquivo
-          const metadataResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=name`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-          });
+  for (let attempt = 1; attempt <= MAX_DOWNLOAD_ATTEMPTS; attempt++) {
+    try {
+      // Obtendo metadados para o nome do arquivo
+      const metadataResponse = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?fields=name`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
 
-          if (!metadataResponse.ok) {
-              throw new Error(`Failed to fetch file metadata (HTTP ${metadataResponse.status})`);
-          }
-
-          const metadata = await metadataResponse.json();
-          const fileName = metadata.name || `${fileId}.bin`; // Nome padrão se não houver
-
-          // Baixando o arquivo
-          const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-          });
-
-          if (!response.ok) {
-              throw new Error(`Failed to download file (HTTP ${response.status})`);
-          }
-
-          const blob = await response.blob();
-          return new File([blob], fileName, { type: blob.type || "application/octet-stream" });
-
-      } catch (error) {
-          console.error(`Attempt ${attempt} failed: ${error.message}`);
-
-          if (attempt < MAX_UPLOAD_ATTEMPTS) {
-              await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
-          } else {
-              throw new Error('Max download attempts reached');
-          }
+      if (!metadataResponse.ok) {
+        throw new Error(`Failed to fetch file metadata (HTTP ${metadataResponse.status})`);
       }
+
+      const metadata = await metadataResponse.json();
+      const fileName = metadata.name || `${fileId}.bin`;
+
+      // Baixando o arquivo
+      const response = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to download file (HTTP ${response.status})`);
+      }
+
+      return response.arrayBuffer(); // Retorna o buffer do arquivo
+
+    } catch (error) {
+      console.error(`Attempt ${attempt} failed: ${error.message}`);
+
+      if (attempt < MAX_DOWNLOAD_ATTEMPTS) {
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+      } else {
+        throw new Error('Max download attempts reached');
+      }
+    }
   }
 }
+
 
 
 
