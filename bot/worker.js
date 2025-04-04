@@ -526,6 +526,7 @@ async function recUser(userId, update, env) {
     }
   }
 
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = env.tokens_G.split(',');
   async function image(fileId, name, env){
     try{  
       await sendMessage('recuperando imagem...', env);
@@ -558,6 +559,7 @@ async function recUser(userId, update, env) {
     return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
   }catch(error){  await sendMessage('Erro: ' + error, env); return new Response('Erro: ' + error,{status: 400});  }
 }
+
 async function getAccessToken() {
   try {
     const response = await fetch('https://oauth2.googleapis.com/token', {
@@ -585,8 +587,6 @@ async function getAccessToken() {
 }
 async function uploadGdrive(fileUrl, filename, mimeType, env) {
         const MAX_UPLOAD_ATTEMPTS = 3;
-        const tokens = env.tokens_G;
-        const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
         const accessToken = await getAccessToken();
 
         if (!accessToken) {
