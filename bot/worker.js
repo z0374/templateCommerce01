@@ -533,8 +533,6 @@ async function recUser(userId, update, env) {
     }
   }
 
-  const tokens_G =env.tokens_G;
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
   async function image(fileId, name, env){
     try{  
       await sendMessage('recuperando imagem...', env);
@@ -546,7 +544,7 @@ async function recUser(userId, update, env) {
       //await sendMessage('Convertido com sucesso!',env);
 
       await sendMessage('Enviando para o armazenamento...', env);
-      const gDrive =  await uploadGdrive(fileBuffer, name, 'image/png', env);
+      const gDrive =  await uploadGdrive(fileBuffer, name, 'image/png');
       await sendMessage('Arquivo salvo com sucesso!', env);
 
       return gDrive.toString();
@@ -569,6 +567,8 @@ async function recUser(userId, update, env) {
 }
 
 async function getAccessToken() {
+  const tokens_G = env.tokens_G;
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
   try {
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -594,6 +594,8 @@ async function getAccessToken() {
   }
 }
 async function uploadGdrive(fileUrl, filename, mimeType) {
+  const tokens_G = env.tokens_G;
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
         const MAX_UPLOAD_ATTEMPTS = 3;
         const accessToken = await getAccessToken();
 
@@ -656,6 +658,8 @@ async function uploadGdrive(fileUrl, filename, mimeType) {
 }
 
 async function downloadGdrive(fileId, env) {
+  const tokens_G = env.tokens_G;
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
   const MAX_UPLOAD_ATTEMPTS = 3;
   const RETRY_DELAY = 2000; // 2 segundos
   const accessToken = await getAccessToken();
