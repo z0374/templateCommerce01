@@ -159,10 +159,10 @@ await processos(messageText);
                       userState.state = 'waiting_confirm_cabecalho';
                       const dataId = userState.select;
                       try{
-                          const logoId = await dados('read',dataId[0],'assets',userId)['nome'];
-                              const dataLogo = await downloadGdrive(logoId, env);
-                          const dataName = await dados('read',dataId[1],'assets',userId)['nome'];
-                          const dataAcss = await dados('read',dataId[2],'assets',userId)['nome'];
+                          const logoId = await dados('read',dataId[0],'assets',userId)['nome']; await sendMessage('Id logo OK',env);
+                              const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
+                          const dataName = await dados('read',dataId[1],'assets',userId)['nome']; await sendMessage('nome OK',env);
+                          const dataAcss = await dados('read',dataId[2],'assets',userId)['nome']; await sendMessage('acessibilidade OK',env);
                           let databtn='';
                           if(dataId[3]){
                               for(let i=0;i<dataId[3].length;i++){
