@@ -533,7 +533,8 @@ async function recUser(userId, update, env) {
     }
   }
 
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = env.tokens_G.split(',');
+  const tokens_G =env.tokens_G;
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
   async function image(fileId, name, env){
     try{  
       await sendMessage('recuperando imagem...', env);
@@ -592,7 +593,7 @@ async function getAccessToken() {
     return null;
   }
 }
-async function uploadGdrive(fileUrl, filename, mimeType, env) {
+async function uploadGdrive(fileUrl, filename, mimeType) {
         const MAX_UPLOAD_ATTEMPTS = 3;
         const accessToken = await getAccessToken();
 
