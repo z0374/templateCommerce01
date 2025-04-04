@@ -143,13 +143,13 @@ await processos(messageText);
                       userState.select.push(await dados('save', acessibilidade, ['assets','nome, tipo'], userId));
                       userState.state = 'waiting_botao_cabecalho';
                       await saveUserState(env, userId, userState);
-                      await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotão | /continuar`, env);
+                      await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotao | /continuar`, env);
                         break;
                   
                   case 'waiting_botao_cabecalho':
                     switch(messageText){
 
-                    case '/adicionarBotão':
+                    case '/adicionarBotao':
                       userState.state = 'waiting_nomeBotao_cabecalho';
                       await saveUserState(env, userId, userState);
                       await sendMessage(`Certo srª. ${userName}\n Informe o nome do botão que deseja adicionar.:`,env);
@@ -168,8 +168,9 @@ await processos(messageText);
                             databtn += `1 - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
                           }
 
-                      const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn - data[4][1]}]`;
+                      const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn}]`;
                       await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
+                      await sendMidia([dataLogo,dataAcss],env)
 
                       await sendMessage(`esta correto? /SIM | /NÂO`, env)
                       await saveUserState(env, userId, userState);
@@ -204,7 +205,7 @@ await processos(messageText);
                           userState.select[btSelect] = [btData];
                           userState.state = 'waiting_botao_cabecalho';
                           await saveUserState(env, userId, userState);
-                          await sendMessage(`Deseja adicionar outro botão?\n /adicionarBotão /continuar`, env);
+                          await sendMessage(`Deseja adicionar outro botão?\n /adicionarBotao /continuar`, env);
                             break;
                         
                         case '/NÃO':
