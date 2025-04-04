@@ -567,8 +567,8 @@ async function recUser(userId, update, env) {
 }
 
 async function getAccessToken(env) {
-  const tokens_G = env.tokens_G;
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
+  const tokensG = env.tokens_G;
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokensG.split(',');
   try {
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -595,8 +595,8 @@ async function getAccessToken(env) {
 }
 
 async function uploadGdrive(fileUrl, filename, mimeType,env) {
-  const tokens_G = env.tokens_G;
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
+  const tokensG = env.tokens_G;
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokensG.split(',');
         const MAX_UPLOAD_ATTEMPTS = 3;
         const accessToken = await getAccessToken(env);
 
@@ -659,8 +659,8 @@ async function uploadGdrive(fileUrl, filename, mimeType,env) {
 }
 
 async function downloadGdrive(fileId, env) {
-  const tokens_G = env.tokens_G;
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens_G.split(',');
+  const tokensG = env.tokens_G;
+  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokensG.split(',');
   const MAX_UPLOAD_ATTEMPTS = 3;
   const RETRY_DELAY = 2000; // 2 segundos
   const accessToken = await getAccessToken(env);
