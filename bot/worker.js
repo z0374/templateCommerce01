@@ -181,7 +181,7 @@ await processos(messageText);
                             await sendMidia([dataLogo,dataAcss],env);
                         }catch(error){await sendMessage(error,env);}
 
-                        await sendMessage(`esta correto? /SIM | /NÂO`, env)
+                        await sendMessage(`esta correto? /SIM | /NAO`, env)
                         await saveUserState(env, userId, userState);
                           break;
                       
