@@ -60,7 +60,7 @@ if(users === null && messageText == '/index' || users === null && messageText ==
      }*/
 await processos(messageText);
     async function processos(messageText){  //Define a função processos com o texto da mensagem como parâmetro
-      if(userState.procesCont>3){await sendMessage('falha na requisição', env); userState=null; await saveUserState(env, userId, userState);return new Response('Falha na requisição');} //Verifica se a quantidade de processos é maior que 3. Se for falha a requisição
+      if(userState.procesCont>3){await sendMessage('falha na requisição', env); await saveUserState(env, userId, null);return new Response('Falha na requisição');} //Verifica se a quantidade de processos é maior que 3. Se for falha a requisição
       else{userState.procesCont++;} //Se não for adiciona 1 ao contador de processos
       //await sendMessage('log3',env);
       if(userState!==null || messageText!=='') {  //verifica se o estado do usuário e nulo ou se o texto da mensagem é vazio
@@ -148,7 +148,7 @@ await processos(messageText);
                   
                   case 'waiting_botao_cabecalho':
                     await sendMessage('log',env);
-                    switch(messageText){
+                    switch(messageText.toLowerCase()){
 
                       case '/adicionarBotao':
                         userState.state = 'waiting_nomeBotao_cabecalho';
