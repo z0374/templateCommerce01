@@ -170,9 +170,9 @@ await processos(messageText);
                               }
 
                           const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn}]`;
+                          await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
+                          await sendMidia([dataLogo,dataAcss],env);
                       }catch(error){await sendMessage(error,env);}
-                      await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
-                      await sendMidia([dataLogo,dataAcss],env);
 
                       await sendMessage(`esta correto? /SIM | /NÂO`, env)
                       await saveUserState(env, userId, userState);
