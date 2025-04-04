@@ -159,7 +159,7 @@ await processos(messageText);
                       userState.state = 'waiting_confirm_cabecalho';
                       const dataId = userState.select;
                       const logoId = await dados('read',dataId[0],'assets',userId)['nome'];
-                        const dataLogo = downloadGdrive(logoId, env);
+                      const dataLogo = downloadGdrive(logoId, env);
                       const dataName = await dados('read',dataId[1],'assets',userId)['nome'];
                       const dataAcss = await dados('read',dataId[2],'assets',userId)['nome'];
                       let databtn;
@@ -199,7 +199,7 @@ await processos(messageText);
                     case 'waiting_confirmBotao_cabecalho':
                       switch(messageText){
                         case '/SIM':
-                          btSelect = userState.select.length - 1;
+                          const btSelect = userState.select.length - 1;
                           const btData = await dados('save', [userState.select[btSelect].toString(),'btn'], ['assets','nome, tipo'], userId);
                           userState.select[btSelect] = [btData];
                           userState.state = 'waiting_botao_cabecalho';
@@ -475,7 +475,7 @@ async function sendMessage(message, env) {
 async function sendMidia(midia, env) {
   await new Promise(resolve => setTimeout(resolve, 500));
     const formData = new FormData();
-    formData.append('chat_id', -4774731816);
+    formData.append('chat_id', '-4774731816');
     formData.append('document', midia[0] || midia);
     formData.append('caption', midia[1] || '');
     formData.append('parse_mode', 'HTML');
@@ -490,8 +490,8 @@ async function sendMidia(midia, env) {
             body: formData,
       });
         const result = await response.json();
-          if(!json.ok){
-            console.error("Erro ao enviar arquivo", json);
+          if(!result.ok){
+            console.error("Erro ao enviar arquivo", result);
             return new Response("Erro ao enviar arquivo", { status: 500 });
           }return new Response("Arquivo enviado com sucesso!",{status: 200});
     }catch(error){
