@@ -163,14 +163,14 @@ await processos(messageText);
                       const dataName = await dados('read',dataId[1],'assets',userId)['nome'];
                       const dataAcss = await dados('read',dataId[2],'assets',userId)['nome'];
                       let databtn ='';
-                          for(let i;i>dataId[3];i++){
+                          for(let i=0;i<dataId[3].length;i++){
                             const data3 = await dados('read',dataId[3],'assets',userId)['nome'];
-                            databtn += `1 - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
+                            databtn += `${i+1} - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
                           }
 
                       const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn}]`;
                       await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
-                      await sendMidia([dataLogo,dataAcss],env)
+                      await sendMidia([dataLogo,dataAcss],env);
 
                       await sendMessage(`esta correto? /SIM | /NÂO`, env)
                       await saveUserState(env, userId, userState);
