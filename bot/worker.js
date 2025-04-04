@@ -112,12 +112,14 @@ await processos(messageText);
 			      
                 //CABEÇALHO DA PÁGINA
                   case 'waiting_section_cabecalho':
+                    userState.procesCont = 0;
                     userState.state = 'waiting_logo_cabecalho';
                     await saveUserState(env, userId, userState);
                     await sendMessage(`Saudações sr. ${userName}!\n Vamos começar a configurar o cabeçalho da sua página web.\nPor favor me envie a imagem da logo da sua organização.:`,env);
                     break;
 
                   case 'waiting_logo_cabecalho':
+                    userState.procesCont = 0;
                     //await sendMessage(messageText,env);
 
                       const agora = new Date();
@@ -131,6 +133,7 @@ await processos(messageText);
                         break;
 					  
                   case 'waiting_nome_cabecalho':
+                    userState.procesCont = 0;
                       const nome = [messageText, 'text'];
                       userState.select.push(await dados('save', nome, ['assets','nome, tipo'], userId));
                       userState.state = 'waiting_acessibilidade_cabecalho';  
@@ -139,6 +142,7 @@ await processos(messageText);
                         break;
 
                   case 'waiting_acessibilidade_cabecalho':
+                    userState.procesCont = 0;
                       const acessibilidade = [messageText, 'text'];
                       userState.select.push(await dados('save', acessibilidade, ['assets','nome, tipo'], userId));
                       userState.state = 'waiting_botao_cabecalho';
@@ -147,7 +151,7 @@ await processos(messageText);
                         break;
                   
                   case 'waiting_botao_cabecalho':
-                    await sendMessage('log',env);
+                    userState.procesCont = 0;
                     switch(messageText.toLowerCase()){
 
                       case '/adicionarBotao':
@@ -187,6 +191,7 @@ await processos(messageText);
                         break;
 
                     case 'waiting_nomeBotao_cabecalho':
+                      userState.procesCont = 0;
                       userState.select.push([messageText]);
                       userState.state = 'waiting_urlBotao_cabecalho';
                       await saveUserState(env, userId, userState);
@@ -194,6 +199,7 @@ await processos(messageText);
                           break;
                     
                     case 'waiting_urlBotao_cabecalho':
+                      userState.procesCont = 0;
                       const bt = userState.select.length - 1;
                       userState.select[bt].push(messageText);
                       userState.state = 'waiting_confirmBotao_cabecalho';
@@ -203,6 +209,7 @@ await processos(messageText);
                           break;
 
                     case 'waiting_confirmBotao_cabecalho':
+                      userState.procesCont = 0;
                       switch(messageText){
                         case '/SIM':
                           const btSelect = userState.select.length - 1;
@@ -223,10 +230,15 @@ await processos(messageText);
                           userState.state = 'waiting_nomeBotao_cabecalho';
                           await saveUserState(env, userId, userState);
                           await sendMessage(`Certo srª. ${userName}\n Informe o nome do botão que deseja adicionar.:`, env);
+                            break;
+
+                            default:
+                              await sendMessage(`Certo srª. ${userName}\n Por gentileza confirme se o botão esta correto.:\nRótulo - ${userState.select[bt][0]}\nURL - ${userState.select[bt][1]}`,env);
                             }
                         break;
                           
                     case 'waiting_confirm_cabecalho':
+                      userState.procesCont = 0;
                       await yesOrNo(messageText);
                       await saveUserState(env, userId, null);
                         break;
