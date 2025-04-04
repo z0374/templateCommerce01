@@ -646,7 +646,7 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
             const result = await response.json();
             //await sendMessage(`File uploaded successfully: ${fullFilename}`, env);
             //return new Response(JSON.stringify({ success: true, message: 'File uploaded successfully', data: result }), { status: 200 });
-            return fullFilename;
+            return result.id;
 
           } catch (error) {
             await sendMessage(`Error uploading file (Attempt ${attempt} of ${MAX_UPLOAD_ATTEMPTS}): ${error.message}`, env);
