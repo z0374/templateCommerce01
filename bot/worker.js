@@ -158,17 +158,17 @@ await processos(messageText);
                     case '/continuar':
                       userState.state = 'waiting_confirm_cabecalho';
                       const dataId = userState.select;
-                      const dataLogo = await dados('read',dataId[0],'assets',userId);
-                      const dataName = await dados('read',dataId[1],'assets',userId);
-                      const dataAcss = await dados('read',dataId[2],'assets',userId);
+                      const logoId = await dados('read',dataId[0],'assets',userId)['nome'];
+                        const dataLogo = downloadGdrive(logoId, env);
+                      const dataName = await dados('read',dataId[1],'assets',userId)['nome'];
+                      const dataAcss = await dados('read',dataId[2],'assets',userId)['nome'];
                       let databtn;
                           for(let i;i>dataId[3];i++){
                             const data3 = await dados('read',dataId[3],tabela,userId)['nome'];
                             databtn += `Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
-                            
                           }
 
-                      const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn - data[4][1]}]`
+                      const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn - data[4][1]}]`;
                       await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
 
                       await sendMessage(`esta correto? /SIM | /NÂO`, env)
@@ -337,15 +337,22 @@ await processos(messageText);
     const _data = env.Data;
     try{
     switch(mode){
-        case 'read':
-          const messageErro = 'Nenhum dado encontrado';
-          try{
-          const _tabela = tabela[0] || tabela;
+      case 'read':
+        try {
+            const messageErro = 'Nenhum dado encontrado';
+            const _tabela = Array.isArray(tabela) ? tabela[0] : tabela; // Garantindo que é uma string válida
+            if (!_tabela) throw new Error('Nome da tabela inválido');
+    
             const query = `SELECT * FROM ${_tabela} WHERE id = ?`;
             const data = await _data.prepare(query).bind(content).first();
-            if(data){return data;}else{throw new Error(messageErro);}
-          }catch(error){await sendMessage(messageErro + ': ' + error, env); return messageErro + ': ' + error; }
-            break;
+    
+            if (!data) throw new Error(messageErro);
+            return data;
+        } catch (error) {
+            await sendMessage(`Erro ao buscar dados: ${error.message}`, env);
+            return { success: false, message: error.message };
+        }
+    
 
 
         case 'readLimit':
@@ -647,30 +654,54 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
       }
 }
 
-          async function downloadGdrive(fileId,env){
-            const MAX_UPLOAD_ATTEMPTS = 3;
-            const tokens = env.tokens_G;
-            const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokens.split(',');
-            const accessToken = await getAccessToken();
-            
-            if (!accessToken) {
-              return new Response(JSON.stringify({ success: false, message: 'Failed to retrieve access token' }), { status: 500 });
-            }
+async function downloadGdrive(fileId, env) {
+  const MAX_UPLOAD_ATTEMPTS = 3;
+  const RETRY_DELAY = 2000; // 2 segundos
+  const accessToken = await getAccessToken();
 
-            const file = await fetch('https://www.googleapis.com/drive/v3/files/'+fileId+'?alt=media',{
-              headers: {
-                Authorization: 'Bearer '+ accessToken,
-              },
-            });
-            if(!file.ok){throw new Error(`Failed to Download file (HTTP ${file.status})`)} 
-              const result = await file.blob();
-                return new Response(result, {
-                  headers: {
-                    "Content-Type": "application/octet-stream",
-                    "content-Disposition": "attachment; filename=" + fileId,
-                  },
-                });
+  if (!accessToken) {
+      throw new Error('Failed to retrieve access token');
+  }
+
+  for (let attempt = 1; attempt <= MAX_UPLOAD_ATTEMPTS; attempt++) {
+      try {
+          // Obtendo metadados para pegar o nome do arquivo
+          const metadataResponse = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=name`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+          });
+
+          if (!metadataResponse.ok) {
+              throw new Error(`Failed to fetch file metadata (HTTP ${metadataResponse.status})`);
           }
+
+          const metadata = await metadataResponse.json();
+          const fileName = metadata.name || `${fileId}.bin`; // Nome padrão se não houver
+
+          // Baixando o arquivo
+          const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+          });
+
+          if (!response.ok) {
+              throw new Error(`Failed to download file (HTTP ${response.status})`);
+          }
+
+          const blob = await response.blob();
+          return new File([blob], fileName, { type: blob.type || "application/octet-stream" });
+
+      } catch (error) {
+          console.error(`Attempt ${attempt} failed: ${error.message}`);
+
+          if (attempt < MAX_UPLOAD_ATTEMPTS) {
+              await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+          } else {
+              throw new Error('Max download attempts reached');
+          }
+      }
+  }
+}
+
+
 
 
 
