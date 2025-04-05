@@ -679,50 +679,81 @@ async function uploadGdrive(fileUrl, filename, mimeType, env) {
 async function downloadGdrive(fileId, env) {
   const MAX_DOWNLOAD_ATTEMPTS = 3;
   const RETRY_DELAY = 2000;
-  const accessToken = await getAccessToken(env);
 
+  const accessToken = await getAccessToken(env);
   if (!accessToken) {
-    throw new Error('Failed to retrieve access token');
+    await sendMessage({ mensagem: "❌ Falha ao obter access token." }, env);
+    throw new Error("Failed to retrieve access token");
   }
 
   for (let attempt = 1; attempt <= MAX_DOWNLOAD_ATTEMPTS; attempt++) {
     try {
-      // Obtendo metadados para o nome do arquivo
-      const metadataResponse = await fetch(
+      await sendMessage({ mensagem: `🔁 Tentativa ${attempt} de obter metadados do arquivo` }, env);
+
+      // 1. Obter metadados (nome do arquivo)
+      const metadataRes = await fetch(
         `https://www.googleapis.com/drive/v3/files/${fileId}?fields=name`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
       );
 
-      if (!metadataResponse.ok) {
-        throw new Error(`Failed to fetch file metadata (HTTP ${metadataResponse.status})`);
+      if (metadataRes.status === 404) {
+        await sendMessage({ mensagem: "❌ Arquivo não encontrado (404). Verifique o fileId e permissões." }, env);
+        throw new Error("File not found");
       }
 
-      const metadata = await metadataResponse.json();
+      if (!metadataRes.ok) {
+        await sendMessage({ mensagem: `❌ Falha ao obter metadados (HTTP ${metadataRes.status})` }, env);
+        throw new Error(`Failed to fetch file metadata (HTTP ${metadataRes.status})`);
+      }
+
+      const metadata = await metadataRes.json();
       const fileName = metadata.name || `${fileId}.bin`;
 
-      // Baixando o arquivo
-      const response = await fetch(
+      await sendMessage({ mensagem: `📁 Nome do arquivo: ${fileName}` }, env);
+
+      // 2. Fazer download do arquivo
+      const fileRes = await fetch(
         `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
       );
 
-      if (!response.ok) {
-        throw new Error(`Failed to download file (HTTP ${response.status})`);
+      if (!fileRes.ok) {
+        await sendMessage({ mensagem: `❌ Falha ao baixar o arquivo (HTTP ${fileRes.status})` }, env);
+        throw new Error(`Failed to download file (HTTP ${fileRes.status})`);
       }
 
-      return response.arrayBuffer(); // Retorna o buffer do arquivo
+      const arrayBuffer = await fileRes.arrayBuffer();
 
-    } catch (error) {
-      console.error(`Attempt ${attempt} failed: ${error.message}`);
+      await sendMessage({ mensagem: `✅ Download concluído com sucesso!` }, env);
+
+      return {
+        buffer: arrayBuffer,
+        name: fileName,
+        mimeType: fileRes.headers.get("content-type") || "application/octet-stream"
+      };
+
+    } catch (err) {
+      await sendMessage({ mensagem: `⛔ Tentativa ${attempt} falhou: ${err.message}` }, env);
 
       if (attempt < MAX_DOWNLOAD_ATTEMPTS) {
+        await sendMessage({ mensagem: `⏳ Nova tentativa em 2 segundos...` }, env);
         await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
       } else {
-        throw new Error('Max download attempts reached');
+        await sendMessage({ mensagem: "🚫 Número máximo de tentativas atingido." }, env);
+        throw new Error("Max download attempts reached");
       }
     }
   }
 }
+
 
 
 
