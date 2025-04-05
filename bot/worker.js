@@ -165,14 +165,14 @@ await processos(messageText);
                         userState.state = 'waiting_confirm_cabecalho';
                         const dataId = userState.select;
                         try{
-                            const logoId = await dados('read',dataId[0],'assets',userId); await sendMessage('Id logo OK'+logoId.toString(),env);
+                            const logoId = await dados('read',dataId[0],'assets',userId); await sendMessage('Id logo OK'+logoId.nome,env);
                                 const dataLogo = await downloadGdrive(logoId.nome, env); await sendMessage('arq logo OK',env);
-                            const dataName = await dados('read',dataId[1],'assets',userId); await sendMessage('nome OK',env);
-                            const dataAcss = await dados('read',dataId[2],'assets',userId); await sendMessage('acessibilidade OK',env);
+                            const dataName = await dados('read',dataId[1],'assets',userId); await sendMessage('nome OK'+JSON.stringify(dataName.nome),env);
+                            const dataAcss = await dados('read',dataId[2],'assets',userId); await sendMessage('acessibilidade OK'+JSON.stringify(dataAcss.nome),env);
                             let databtn='';
                             if(dataId[3]){
                                 for(let i=0;i<dataId[3].length;i++){
-                                  const data3 = await dados('read',dataId[3][i].nome,'assets',userId);
+                                  const data3 = await dados('read',dataId[3][i],'assets',userId);
                                   databtn += `${i+1} - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
                                 }}
 
@@ -365,7 +365,7 @@ await processos(messageText);
             const data = await _data.prepare(query).bind(content).first();
     
             if (!data) throw new Error(messageErro);
-            return JSON.stringify(data);
+            return JSON.parse(data);
         } catch (error) {
             await sendMessage(`Erro ao buscar dados: ${error.message}`, env);
             return { success: false, message: error.message };
