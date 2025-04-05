@@ -275,64 +275,11 @@ await processos(messageText);
     }
     
     async function yesOrNo(section){
-      if(section == 'bd' && userState.dados !== '' && await normalize(messageText) === 'sim'){
-        const db = env.Data;
-          const tabela = await normalize(userState.proces);
-          const querySQL = `
-            INSERT INTO ${String(tabela)} (id, titulo, legenda, apelido, url) 
-            VALUES (?, ?, ?, ?, ?)  `;
-            try{
-              await sendMessage(userState.dados,env);
-              await db.prepare(querySQL).bind(...userState.dados).run();
-              userState=null;
-              await saveUserState(env, userId, userState);
-              await sendMessage('<b>salvo!</b> \n Reiniciar ( /comandos )?',env);
-              return new Response('Salvo',{status:200});
-              
-            }catch (error){await sendMessage('Erro ao salvar dados',env); return new Response("Erro ao inserir dados:"+error.message, {status:500})}
-          }else
-	if(userState.state === 'waiting_ _data_dados_confirm'){
-        
-	   _data[section].push(...userState.dados); 
-		await dados('save', [ _data,messageText], env, userId);
-              return new Response('ok');
-	}else
-      if(userState.texto!=='' && await normalize(messageText) === 'sim'){
-          if(userState.state === 'waiting_confirm_delet'){ //Verifica se o comando é para deletar os dados
-              const {array, indice} = userState.select; //extrai o array eo indice armazenado no cache da seção
+      switch(messageText){
 
-            if ( _data[array].length > indice) {
-              const arrayLength =  _data[array].length; //Armazena o tamanho primário do array
-               _data[array].splice(indice, 1); //Remove os dados e faz a reindexação o array
-              await dados('save',  _data, env,userId); //Salva os dados no KV
-
-              if( _data[array].length === arrayLength-1){ //Verifica se os dados foram deletados corretamente
-                await sendMessage('<b>DELETADO!</b> / _data', env); //Envia a informação que os dados foram deletados 
-                userState=null; //Reseta o cache carregado da seção
-                await saveUserState(env, userId, userState); //Salva o cache da seção no arquivo KV 
-                await processos('/ _data'); //chama o processo de reinicio da seção
-              }else{await sendMessage('Falha ao deletar os dados!', env);} //Retorna a informção que houve falha ao deletar os dados
-            }else{await sendMessage('Dados inexistentes', env);} //Retorna a informação que houve falha ao recuperar os dados
-
-          }else
-          if (userState.select.array.length > 0 || userState.select.indice.length > 0) {  
-              let _indice = userState.select.indice;
-              let _array = userState.select.array;
-               _data[_array][_indice][0] = userState.titulo;
-               _data[_array][_indice][1] = userState.texto;
-          }else{
-                   _data[section].push([String(userState.titulo), String(userState.texto)]);
-                }
+        case '/NAO':
             
-              await dados('save', [ _data,messageText], env,userId);
-              return new Response('ok');
-      }else
-    if(await normalize(messageText) === 'nao'){
-        userState.state = 'waiting_section_' + String(section);
-        await saveUserState(env, userId, userState);
-        await processos('');
-        return new Response('ok');
-    }else{await sendMessage('Comando desconhecido\n <i>Tente novamente</i>.', env)}
+      }
   }
 
 }catch {await sendMessage('Sem requisição WEBHOOK'); return new Response('ok',{status:200})}
