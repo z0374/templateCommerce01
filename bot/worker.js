@@ -186,7 +186,7 @@ await processos(messageText);
                           break;
                       
                           default:
-                            await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotão | /continuar`, env);
+                            await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotao | /continuar`, env);
                     }
                         break;
 
