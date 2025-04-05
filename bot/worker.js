@@ -166,15 +166,15 @@ await processos(messageText);
                         const dataId = userState.select;
                         try{
                             const logoId = await dados('read',dataId[0],'assets',userId); await sendMessage('Id logo OK '+logoId.nome,env);
-                                const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
+                                //const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
                             const dataName = await dados('read',dataId[1],'assets',userId).nome; await sendMessage('nome OK'+JSON.stringify(dataName),env);
                             const dataAcss = await dados('read',dataId[2],'assets',userId).nome; await sendMessage('acessibilidade OK'+JSON.stringify(dataAcss),env);
                             let databtn='';
-                            if(dataId[3]){
+                            /*if(dataId[3]){
                                 for(let i=0;i<dataId[3].length;i++){
                                   const data3 = await dados('read',dataId[3][i],'assets',userId);
                                   databtn += `${i+1} - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
-                                }}
+                                }}*/
 
                             const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn}]`;
                             await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
