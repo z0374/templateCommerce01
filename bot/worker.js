@@ -155,7 +155,7 @@ await processos(messageText);
                     switch(messageText){
 
                       case '/adicionarBotao':
-                        userState.state = 'waiting_nomeBotao_cabecalho';
+                        userState.state = 'waiting_nome_botao_cabecalho';
                         await saveUserState(env, userId, userState);
                         await sendMessage(`Certo srª. ${userName}\n Informe o nome do botão que deseja adicionar.:`,env);
                           break;
@@ -190,25 +190,25 @@ await processos(messageText);
                     }
                         break;
 
-                    case 'waiting_nomeBotao_cabecalho':
+                    case 'waiting_nome_botao_cabecalho':
                       userState.procesCont = 0;
                       userState.select.push([messageText]);
-                      userState.state = 'waiting_urlBotao_cabecalho';
+                      userState.state = 'waiting_url_botao_cabecalho';
                       await saveUserState(env, userId, userState);
                       await sendMessage(`Certo srª. ${userName}\n Informe a URL do botão que deseja adicionar.:`,env);
                           break;
                     
-                    case 'waiting_urlBotao_cabecalho':
+                    case 'waiting_url_botao_cabecalho':
                       userState.procesCont = 0;
                       const bt = userState.select.length - 1;
                       userState.select[bt].push(messageText);
-                      userState.state = 'waiting_confirmBotao_cabecalho';
+                      userState.state = 'waiting_confirm_botao_cabecalho';
                       await saveUserState(env, userId, userState);
                       await sendMessage(`Certo srª. ${userName}\n Por gentileza confirme se o botão esta correto.:\nRótulo - ${userState.select[bt][0]}\nURL - ${userState.select[bt][1]}`,env);
                       await sendMessage(`Esta correto? /SIM | /NÃO`,env);
                           break;
 
-                    case 'waiting_confirmBotao_cabecalho':
+                    case 'waiting_confirm_botao_cabecalho':
                       userState.procesCont = 0;
                       switch(messageText){
                         case '/SIM':
