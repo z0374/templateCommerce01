@@ -152,7 +152,7 @@ await processos(messageText);
                   
                   case 'waiting_botao_cabecalho':
                     userState.procesCont = 0;
-                    switch(messageText.toLowerCase()){
+                    switch(messageText){
 
                       case '/adicionarBotao':
                         userState.state = 'waiting_nomeBotao_cabecalho';
