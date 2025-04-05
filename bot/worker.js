@@ -165,7 +165,7 @@ await processos(messageText);
                         userState.state = 'waiting_confirm_cabecalho';
                         const dataId = userState.select;
                         try{
-                            const logoId = await dados('read',dataId[0],'assets',userId).nome; await sendMessage('Id logo OK'+logoId,env);
+                            const logoId = JSON.stringify(await dados('read',dataId[0],'assets',userId).nome); await sendMessage('Id logo OK'+logoId,env);
                                 const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
                             const dataName = await dados('read',dataId[1],'assets',userId).nome; await sendMessage('nome OK'+JSON.stringify(dataName),env);
                             const dataAcss = await dados('read',dataId[2],'assets',userId).nome; await sendMessage('acessibilidade OK'+JSON.stringify(dataAcss),env);
@@ -365,7 +365,7 @@ await processos(messageText);
             const data = await _data.prepare(query).bind(content).first();
     
             if (!data) throw new Error(messageErro);
-            return JSON.parse(data);
+            return data;
         } catch (error) {
             await sendMessage(`Erro ao buscar dados: ${error.message}`, env);
             return { success: false, message: error.message };
