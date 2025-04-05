@@ -220,7 +220,7 @@ await processos(messageText);
                           await sendMessage(`Deseja adicionar outro botão?\n /adicionarBotao /continuar`, env);
                             break;
                         
-                        case '/NÃO':
+                        case '/NAO':
                           await sendMessage(`Sr. ${userName}, deseja /cancelar ou /reiniciar ?`, env)
                             break;
                         
