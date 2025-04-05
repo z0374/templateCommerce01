@@ -171,7 +171,7 @@ await processos(messageText);
                             const dataAcss = (await dados('read',dataId[2],'assets',userId)).nome; await sendMessage('acessibilidade OK'+dataAcss,env);
                             let databtn='';
                             if(dataId[3]){
-                                for(let i=0;i<dataId[3].length;i++){
+                                for(let i=0;i<=dataId[3].length;i++){
                                   const data3 = (await dados('read',dataId[3][i],'assets',userId)).nome.split(',');
                                   databtn += `${i+1} - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
                                 }}
@@ -192,7 +192,7 @@ await processos(messageText);
 
                     case 'waiting_nome_botao_cabecalho':
                       userState.procesCont = 0;
-                      userState.select.push([messageText]);
+                      userState.titulo = messageText+', ';
                       userState.state = 'waiting_url_botao_cabecalho';
                       await saveUserState(env, userId, userState);
                       await sendMessage(`Certo srª. ${userName}\n Informe a URL do botão que deseja adicionar.:`,env);
@@ -200,8 +200,7 @@ await processos(messageText);
                     
                     case 'waiting_url_botao_cabecalho':
                       userState.procesCont = 0;
-                      const bt = userState.select.length - 1;
-                      userState.select[bt].push(messageText);
+                      userState.titulo += messageText;
                       userState.state = 'waiting_confirm_botao_cabecalho';
                       await saveUserState(env, userId, userState);
                       await sendMessage(`Certo srª. ${userName}\n Por gentileza confirme se o botão esta correto.:\nRótulo - ${userState.select[bt][0]}\nURL - ${userState.select[bt][1]}`,env);
@@ -212,10 +211,12 @@ await processos(messageText);
                       userState.procesCont = 0;
                       switch(messageText){
                         case '/SIM':
-                          const btSelect = userState.select.length - 1;
+                          userState.select.push([]);
+                          const btSelect = userState.select.length-1;
                           const btData = await dados('save', [userState.select[btSelect].toString(),'btn'], ['assets','nome, tipo'], userId);
-                          userState.select[btSelect] = [btData];
+                          userState.select[btSelect].push(userState.titulo);
                           userState.state = 'waiting_botao_cabecalho';
+                          userState.titulo = '';
                           await saveUserState(env, userId, userState);
                           await sendMessage(`Deseja adicionar outro botão?\n /adicionarBotao /continuar`, env);
                             break;
