@@ -165,14 +165,14 @@ await processos(messageText);
                         userState.state = 'waiting_confirm_cabecalho';
                         const dataId = userState.select;
                         try{
-                            const logoId = await dados('read',dataId[0],'assets',userId)['nome']; await sendMessage('Id logo OK',env);
+                            const logoId = await dados('read',dataId[0],'assets',userId).nome; await sendMessage('Id logo OK'+logoId,env);
                                 const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
-                            const dataName = await dados('read',dataId[1],'assets',userId)['nome']; await sendMessage('nome OK',env);
-                            const dataAcss = await dados('read',dataId[2],'assets',userId)['nome']; await sendMessage('acessibilidade OK',env);
+                            const dataName = await dados('read',dataId[1],'assets',userId).nome; await sendMessage('nome OK',env);
+                            const dataAcss = await dados('read',dataId[2],'assets',userId).nome; await sendMessage('acessibilidade OK',env);
                             let databtn='';
                             if(dataId[3]){
                                 for(let i=0;i<dataId[3].length;i++){
-                                  const data3 = await dados('read',dataId[3][i],'assets',userId)['nome'];
+                                  const data3 = await dados('read',dataId[3][i],'assets',userId).nome;
                                   databtn += `${i+1} - Rótulo: ${data3[0]} - URL: ${data3[1]}\n`;
                                 }}
 
