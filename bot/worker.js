@@ -213,8 +213,8 @@ await processos(messageText);
                         case '/SIM':
                           userState.select.push([]);
                           const btSelect = userState.select.length-1;
-                          const btData = await dados('save', [userState.select[btSelect].toString(),'btn'], ['assets','nome, tipo'], userId);
-                          userState.select[btSelect].push(userState.titulo);
+                          const btData = await dados('save', [userState.titulo,'btn'], ['assets','nome, tipo'], userId);
+                          userState.select[btSelect].push(btData);
                           userState.state = 'waiting_botao_cabecalho';
                           userState.titulo = '';
                           await saveUserState(env, userId, userState);
