@@ -166,7 +166,7 @@ await processos(messageText);
                         const dataId = userState.select;
                         try{
                             const logoId = (await dados('read',dataId[0],'assets',userId)).nome; await sendMessage('Id logo OK '+logoId,env);
-                                const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
+                                //const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
                             const dataName = (await dados('read',dataId[1],'assets',userId)).nome; await sendMessage('nome OK'+dataName,env);
                             const dataAcss = (await dados('read',dataId[2],'assets',userId)).nome; await sendMessage('acessibilidade OK'+dataAcss,env);
                             let databtn='';
