@@ -263,7 +263,8 @@ await processos(messageText);
                           
                     case 'waiting_confirm_cabecalho':
                       userState.procesCont = 0;
-                      await yesOrNo(messageText);
+                      const dataHeader = [(JSON.stringify(userState.select)),'indexHeader']
+                      await yesOrNo(dataHeader,['config','nome,tipo']);
                       await saveUserState(env, userId, null);
                         break;
 
@@ -298,11 +299,15 @@ await processos(messageText);
     }
     }
     
-    async function yesOrNo(section){
+    async function yesOrNo(content, tabela){
       switch(messageText){
         case '/SIM':
-          await dados()
+         try{
+          const result = await dados('save',content,tabela,userId);
+              await sendMessage('Salvo com sucesso!',env)
+              }catch(error){await sendMessage('Erro ao salvar dados:'+error, env);}
             break;
+
         case '/NAO':
 
       }
