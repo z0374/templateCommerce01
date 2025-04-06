@@ -172,8 +172,8 @@ await processos(messageText);
                             let databtn='';
                             if(dataId[3]){
                                 for(let i=0;i<=dataId[3].length;i++){
-                                  const data3 = await dados('read',dataId[3][i],'assets',userId);
-                                  const [rotulo, url] = data3.nome.split(',');
+                                  const data3 = (await dados('read',dataId[3][i],'assets',userId)).nome;
+                                  const [rotulo, url] = data3.split(',');
                                   databtn += `${i+1} - Rótulo: ${rotulo} - URL: ${url}\n`;
                                 }}
 
@@ -216,7 +216,7 @@ await processos(messageText);
                           const btData = await dados('save', [userState.titulo,'btn'], ['assets','nome, tipo'], userId);
                           if(!userState.select[3]){
                                 userState.select.push([]);
-                            } 
+                            }
                           userState.select[3].push(btData);
                           userState.state = 'waiting_botao_cabecalho';
                           userState.titulo = '';
