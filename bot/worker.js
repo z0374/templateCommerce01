@@ -466,31 +466,40 @@ async function sendMessage(message, env) {
 
 async function sendMidia(midia, env) {
   await new Promise(resolve => setTimeout(resolve, 500));
-    const formData = new FormData();
-    formData.append('chat_id', '-4774731816');
-    formData.append('document', midia[0] || midia);
-    formData.append('caption', midia[1] || '');
-    formData.append('parse_mode', 'HTML');
-    const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendDocument`;
-    
-      try{
-          const response = await fetch(telegramUrl, {
-            method: 'Post',
-            headers: {
-                'content-Type': 'application/json'
-            },
-            body: formData,
-      });
-        const result = await response.json();
-          if(!result.ok){
-            console.error("Erro ao enviar arquivo", result);
-            return new Response("Erro ao enviar arquivo", { status: 500 });
-          }return new Response("Arquivo enviado com sucesso!",{status: 200});
-    }catch(error){
-      console.error("Erro ao conectar com a API do Telegram:", error);
-      return new Response("Erro ao conectar com a API do Telegram", { status: 500 });
+
+  const isArray = Array.isArray(midia);
+  const file = isArray ? midia[0] : midia;
+  const caption = isArray ? midia[1] || '' : '';
+
+  const formData = new FormData();
+  formData.append('chat_id', '-4774731816');
+  formData.append('document', new Blob([file.buffer], { type: file.mimeType }), file.name);
+  formData.append('caption', caption);
+  formData.append('parse_mode', 'HTML');
+
+  const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendDocument`;
+
+  try {
+    const response = await fetch(telegramUrl, {
+      method: 'POST',
+      body: formData // ❗ NÃO adicione Content-Type aqui
+    });
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      console.error("Erro ao enviar arquivo:", result);
+      return new Response("Erro ao enviar arquivo", { status: 500 });
     }
+
+    return new Response("✅ Arquivo enviado com sucesso!", { status: 200 });
+
+  } catch (error) {
+    console.error("Erro ao conectar com a API do Telegram:", error);
+    return new Response("Erro ao conectar com a API do Telegram", { status: 500 });
+  }
 }
+
 
 async function loadUserState(env, userId) {
   const state = await env.sessionState.get(userId);  
