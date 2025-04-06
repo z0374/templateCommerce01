@@ -172,7 +172,7 @@ await processos(messageText);
                             let databtn='';
                             if(dataId[3]){
                                 for(let i=0;i<=dataId[3].length;i++){
-                                  const data3 = (await dados('read',dataId[3][i],'assets',userId));
+                                  const data3 = await dados('read',dataId[3][i],'assets',userId);
                                   const [rotulo, url] = data3.nome.split(',');
                                   databtn += `${i+1} - Rótulo: ${rotulo} - URL: ${url}\n`;
                                 }}
@@ -279,7 +279,9 @@ await processos(messageText);
     
     async function yesOrNo(section){
       switch(messageText){
-
+        case '/SIM':
+          await dados()
+            break;
         case '/NAO':
 
       }
