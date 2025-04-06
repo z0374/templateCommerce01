@@ -261,6 +261,9 @@ await processos(messageText);
                             break;
 
                             default:
+                              userState.state = 'waiting_botao_cabecalho';
+                              userState.titulo = '';
+                              await saveUserState(env, userId, userState);
                               await sendMessage(`Certo srª. ${userName}\n Por gentileza confirme se o botão esta correto.:\nRótulo - ${userState.select[bt][0]}\nURL - ${userState.select[bt][1]}`,env);
                             }
                         break;
