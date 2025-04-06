@@ -201,9 +201,10 @@ await processos(messageText);
                     case 'waiting_url_botao_cabecalho':
                       userState.procesCont = 0;
                       userState.titulo += messageText;
+                      const [rotulo, url] = userState.titulo.split(',');
                       userState.state = 'waiting_confirm_botao_cabecalho';
                       await saveUserState(env, userId, userState);
-                      await sendMessage(`Certo srª. ${userName}\n Por gentileza confirme se o botão esta correto.:\nRótulo - ${userState.select[bt][0]}\nURL - ${userState.select[bt][1]}`,env);
+                      await sendMessage(`Certo srª. ${userName}\n Por gentileza confirme se o botão esta correto.:\nRótulo - ${rotulo}\nURL - ${url}`,env);
                       await sendMessage(`Esta correto? /SIM | /NAO`,env);
                           break;
 
