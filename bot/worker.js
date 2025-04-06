@@ -160,31 +160,55 @@ await processos(messageText);
                         await sendMessage(`Certo srª. ${userName}\n Informe o nome do botão que deseja adicionar.:`,env);
                           break;
                       
-                      case '/continuar':
-                        await sendMessage('log',env);
-                        userState.state = 'waiting_confirm_cabecalho';
-                        const dataId = userState.select;
-                        try{
-                            const logoId = (await dados('read',dataId[0],'assets',userId)).nome; await sendMessage('Id logo OK '+logoId,env);
-                                //const dataLogo = await downloadGdrive(logoId, env); await sendMessage('arq logo OK',env);
-                            const dataName = (await dados('read',dataId[1],'assets',userId)).nome; await sendMessage('nome OK'+dataName,env);
-                            const dataAcss = (await dados('read',dataId[2],'assets',userId)).nome; await sendMessage('acessibilidade OK'+dataAcss,env);
-                            let databtn='';
-                            if(dataId[3]){
-                                for(let i=0;i<=dataId[3].length;i++){
-                                  const data3 = (await dados('read',dataId[3][i],'assets',userId)).nome;
-                                  const [rotulo, url] = data3.split(',');
-                                  databtn += `${i+1} - Rótulo: ${rotulo} - URL: ${url}\n`;
-                                }}
-
-                            const dataHeader = `Nome = ${dataName}\nBotões=[\n ${databtn}]`;
-                            await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n ${dataHeader}`, env);
-                            await sendMidia([dataLogo,dataAcss],env);
-                        }catch(error){await sendMessage(error,env);}
-
-                        await sendMessage(`esta correto? /SIM | /NAO`, env)
-                        await saveUserState(env, userId, userState);
-                          break;
+                          case '/continuar':
+                            await sendMessage('log', env);
+                            userState.state = 'waiting_confirm_cabecalho';
+                            const dataId = userState.select;
+                          
+                            try {
+                              // Logo
+                              const logoId = (await dados('read', dataId[0], 'assets', userId)).nome;
+                              await sendMessage('Id logo OK: ' + logoId, env);
+                              // const dataLogo = await downloadGdrive(logoId, env); // Descomente se for usar
+                          
+                              // Nome
+                              const dataName = (await dados('read', dataId[1], 'assets', userId)).nome;
+                              await sendMessage('Nome OK: ' + dataName, env);
+                          
+                              // Acessibilidade
+                              const dataAcss = (await dados('read', dataId[2], 'assets', userId)).nome;
+                              await sendMessage('Acessibilidade OK: ' + dataAcss, env);
+                          
+                              // Botões
+                              let databtn = '';
+                              if (Array.isArray(dataId[3])) {
+                                for (let i = 0; i < dataId[3].length; i++) {
+                                  const resultado = await dados('read', dataId[3][i], 'assets', userId);
+                                  const nome = resultado?.nome;
+                          
+                                  if (typeof nome === 'string' && nome.includes(',')) {
+                                    const [rotulo, url] = nome.split(',').map(s => s.trim());
+                                    databtn += `${i + 1} - Rótulo: ${rotulo} - URL: ${url}\n`;
+                                  } else {
+                                    await sendMessage(`❗ Botão ${i + 1}: nome inválido no ID ${dataId[3][i]}`, env);
+                                  }
+                                }
+                              }
+                          
+                              const dataHeader = `Nome = ${dataName}\nBotões = [\n${databtn}]`;
+                              await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n${dataHeader}`, env);
+                          
+                              // Enviar mídias se estiver ativado
+                              // await sendMidia([dataLogo, dataAcss], env);
+                          
+                            } catch (error) {
+                              await sendMessage(`❌ Erro: ${error.message || error}`, env);
+                            }
+                          
+                            await sendMessage(`Está correto? /SIM | /NAO`, env);
+                            await saveUserState(env, userId, userState);
+                            break;
+                          
                       
                           default:
                             await sendMessage(`${userName}\n, o sr. Deseja adicionar um novo botão ao menu?\n /adicionarBotao | /continuar`, env);
