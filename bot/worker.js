@@ -192,7 +192,7 @@ await processos(messageText);
                               await sendMessage(`Sr. ${userName}, por gentileza confirme os dados do cabeçalho.\n\n${dataHeader}`, env);
                           
                               // Enviar mídias se estiver ativado
-                              // await sendMidia([dataLogo, dataAcss], env);
+                              await sendMidia([dataLogo, dataAcss], env);
                           
                             } catch (error) {
                               await sendMessage(`❌ Erro: ${error.message || error}`, env);
