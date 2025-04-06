@@ -161,23 +161,16 @@ await processos(messageText);
                           break;
                       
                           case '/continuar':
-                            await sendMessage('log', env);
+                            //await sendMessage('log', env);
                             userState.state = 'waiting_confirm_cabecalho';
                             const dataId = userState.select;
                           
                             try {
                               // Logo
-                              const logoId = (await dados('read', dataId[0], 'assets', userId)).nome;
-                              await sendMessage('Id logo OK: ' + logoId, env);
-                              // const dataLogo = await downloadGdrive(logoId, env); // Descomente se for usar
-                          
-                              // Nome
-                              const dataName = (await dados('read', dataId[1], 'assets', userId)).nome;
-                              await sendMessage('Nome OK: ' + dataName, env);
-                          
-                              // Acessibilidade
-                              const dataAcss = (await dados('read', dataId[2], 'assets', userId)).nome;
-                              await sendMessage('Acessibilidade OK: ' + dataAcss, env);
+                              const logoId = (await dados('read', dataId[0], 'assets', userId)).nome; //await sendMessage('Id logo OK: ' + logoId, env);
+                                  const dataLogo = await downloadGdrive(logoId, env); // Descomente se for usar
+                              const dataName = (await dados('read', dataId[1], 'assets', userId)).nome; //await sendMessage('Nome OK: ' + dataName, env);
+                              const dataAcss = (await dados('read', dataId[2], 'assets', userId)).nome; //await sendMessage('Acessibilidade OK: ' + dataAcss, env);
                           
                               // Botões
                               let databtn = '';
