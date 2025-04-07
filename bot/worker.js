@@ -745,15 +745,6 @@ async function downloadGdrive(fileId, env) {
   }
 }
 
-
-
-
-
-
-
-
-
-
 async function normalize(str) {
   return str
     .toLowerCase()
