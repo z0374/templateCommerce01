@@ -562,8 +562,8 @@ async function recUser(userId, update, env) {
 
   async function recFile(fileId, env) {
    try{
-    const TELEGRAM_BOT_TOKEN = env.bot_Token;
-    const fileUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`;
+    const botToken = (env.bot_Token.split(','))[1];
+    const fileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`;
     const fileResponse = await fetch(fileUrl);
     const fileData = await fileResponse.json();
     
@@ -571,7 +571,7 @@ async function recUser(userId, update, env) {
         throw new Error("Erro ao obter arquivo do Telegram");
     }
 
-    return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
+    return `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`;
   }catch(error){  await sendMessage('Erro: ' + error, env); return new Response('Erro: ' + error,{status: 400});  }
 }
 
