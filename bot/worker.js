@@ -442,15 +442,17 @@ if (tableExists.results.length === 0) {  // Verifica se a tabela existe
 
 async function sendMessage(message, env) {
   await new Promise(resolve => setTimeout(resolve, 500));
+  
   const mensagem = encodeURIComponent(message);
-  const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendMessage?chat_id=-4774731816&text=${mensagem}`;
+  const [botToken, chatId] = env.bot_Token.join(',')
+  const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=-4774731816&text=${mensagem}`;
 
   try {
     const response = await fetch(telegramUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        chat_id: -4774731816,
+        chat_id: chatId,
         text: message,
         parse_mode: "HTML",
       }),
@@ -475,14 +477,15 @@ async function sendMidia(midia, env) {
   const isArray = Array.isArray(midia);
   const file = isArray ? midia[0] : midia;
   const caption = isArray ? midia[1] || '' : '';
+  const [botToken, chatId] = env.bot_Token.join(',')
 
   const formData = new FormData();
-  formData.append('chat_id', '-4774731816');
+  formData.append('chat_id', chatId);
   formData.append('document', new Blob([file.buffer], { type: file.mimeType }), file.name);
   formData.append('caption', caption);
   formData.append('parse_mode', 'HTML');
 
-  const telegramUrl = `https://api.telegram.org/bot${env.bot_Token}/sendDocument`;
+  const telegramUrl = `https://api.telegram.org/bot${botToken}/sendDocument`;
 
   try {
     const response = await fetch(telegramUrl, {
