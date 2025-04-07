@@ -1,0 +1,30 @@
+name = 'template-commerce01'
+minify = false
+type = 'javascript'
+
+account_id = ""
+workers_dev = true  # Para rodar no domínio de workers-dev
+compatibility_date = "2024-02-18"  # Use a data atual
+main = "worker.js"  # Caminho correto para o seu script
+
+[observability.logs]
+enabled = true
+
+[build.upload]
+format = "service-worker"
+[build]
+minify = false
+sourcemap = false
+
+[[kv_namespaces]]
+binding = "sessionState"
+id = ""
+
+[[d1_databases]]
+binding = "Data"  # Nome da variável no código
+database_name = "template_comerce01"
+database_id = ""
+
+#Crie também uma variável "tokens_G" para armazenar os tokens do Google e outra chamada "bot_Token" para armazenar os tokens do telegramBot.
+#tokens_G = GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID   | não deixe espaços entre os tokens
+#bot_Token = token Id do bot , Id do chat | não deixe espaços entre os ids.
