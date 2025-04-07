@@ -604,8 +604,8 @@ async function getAccessToken(env) {
 }
 
 async function uploadGdrive(fileUrl, filename, mimeType, env) {
-  const tokensG = env.tokens_G;
-  const [GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, DRIVE_FOLDER_ID] = tokensG.split(',');
+  
+  const DRIVE_FOLDER_ID = (env.tokens_G.split(','))[3];
         const MAX_UPLOAD_ATTEMPTS = 3;
         const accessToken = await getAccessToken(env);
 //  bot_Token
