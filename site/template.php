@@ -5,12 +5,11 @@ require ('../WaranasLibrary/waranas.php');
 $produtos=[];
 
 //Carregar dados do bot
-$urlJson = '';
-    $key = '';
+$url = '';
     $pageToken = '';
+    $parametro = '';
     $authToken = '';
-    $data = getJsonData($urlJson, $key, $authToken, $pageToken);
-$data_header=[...$data['header']];
+    $dataHeader = getJsonData($url, $parametro, $authToken, $pageToken);
 
     $head[]='<script src="https://kit.fontawesome.com/b42a2f6a22.js" crossorigin="anonymous"></script>';
   $menu=[['url'=>'contato.html','content'=>'Contato'],['url'=>'sm.html','content'=>'Saiba mais...']];

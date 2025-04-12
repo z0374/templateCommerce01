@@ -3,12 +3,105 @@ export default { //Exporta as variáveis de ambientes
   async fetch(request, env, ctx) { //Faz a requisição asincrona das variaveis de ambiente e da requisição
     if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') === '5354wD0f0D0f054w705') { //Verifica se a requisição vem do bot do telegram
     return handleRequest(request, env); //Chama a função que trata a requisição do telegram
-  }else if(request.headers.get('X-Page-Token')==='lrbb1lrp00wp1w3I1l70b4r8r570'){ //verifica se a página que esta solicitando esta autorizada a receber os dados
+  }else if(request.headers.get('X-Page-Token')===env.tokenSite){ //verifica se a página que esta solicitando esta autorizada a receber os dados
      // return handleJson(request, env);  //Chama a função que envia os dados para a hospedagem
   }else{ 
     /*await sendMessage('Acesso Negado',env);*/ return new Response('Acesso Negado',{status:200})} //Caso não for uma hospedagem autorizada ou o bot do telegram nega o acesso
   },
 };
+
+async function handleJson(request, env) {
+  const url = new URL(request.url);
+  const tipo = url.searchParams.get("tipo");
+  const id = url.searchParams.get("id");
+  const authHeader = request.headers.get("Authorization");
+  const origin = request.headers.get("Referer") || request.headers.get("Origin");
+
+  const ALLOWED_ORIGIN = "";     // Exemplo: "https://seusite.com"
+  const AUTH_TOKEN = "";         // Exemplo: "Bearer suatoken123"
+  const VALID_PAGE_TOKEN = "";   // Defina um token válido aqui
+
+  // Verificação de domínio autorizado
+  if (origin !== ALLOWED_ORIGIN) {
+    return new Response(JSON.stringify("Domínio não autorizado: " + origin), { status: 403 });
+  }
+
+  // Verificação do token de autorização
+  if (authHeader !== AUTH_TOKEN) {
+    return new Response(JSON.stringify({ error: "Envio não autorizado" }), { status: 403 });
+  }
+
+  // Verificação do pageToken
+  if (pageToken !== VALID_PAGE_TOKEN) {
+    return new Response(JSON.stringify({ error: "Token de página inválido" }), { status: 403 });
+  }
+
+  try {
+    let query = `SELECT nome, tipo FROM assets`;
+    const conditions = [];
+    const binds = [];
+
+    if (tipo) {
+      conditions.push("tipo = ?");
+      binds.push(tipo);
+    }
+
+    if (id) {
+      conditions.push("id = ?");
+      binds.push(parseInt(id));
+    }
+
+    if (conditions.length > 0) {
+      query += " WHERE " + conditions.join(" AND ");
+    }
+
+    query += " ORDER BY id DESC";
+
+    const result = await env.Data.prepare(query).bind(...binds).all();
+    const rows = result.results;
+
+    if (rows.length === 0) {
+      return new Response(JSON.stringify({ error: "Nenhum dado encontrado com os critérios fornecidos" }), { status: 404 });
+    }
+
+    // Se for tipo imagem
+    if (tipo === "img" || (rows[0]?.tipo === "img" && !tipo)) {
+      const arquivos = [];
+
+      for (const row of rows) {
+        try {
+          const file = await downloadGdrive(row.nome, env);
+          arquivos.push({
+            name: file.name,
+            mimeType: file.mimeType,
+            base64: Buffer.from(file.buffer).toString("base64")
+          });
+        } catch (err) {
+          console.error("Erro ao baixar imagem:", row.nome, err.message);
+        }
+      }
+
+      return new Response(JSON.stringify(arquivos), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    // Caso não seja imagem, retorna só os nomes
+    const nomes = rows.map(r => r.nome);
+    return new Response(JSON.stringify(nomes), {
+      headers: { "Content-Type": "application/json" }
+    });
+
+  } catch (error) {
+    return new Response(JSON.stringify({
+      error: "Erro ao consultar a base de dados",
+      details: error.message
+    }), { status: 500 });
+  }
+}
+
+
+
 
 async function handleRequest(request, env) {  //Função que trata a requisição do Webhook
   await new Promise(resolve => setTimeout(resolve, 1000));  //Aguarda 1 segundo para começar a rodar o script
