@@ -1,10 +1,10 @@
 export default { //Exporta as variáveis de ambientes
  
   async fetch(request, env, ctx) { //Faz a requisição asincrona das variaveis de ambiente e da requisição
-    if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') === '5354wD0f0D0f054w705') { //Verifica se a requisição vem do bot do telegram
+    if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') === (env.bot_Token.split(','))[2]) { //Verifica se a requisição vem do bot do telegram
     return handleRequest(request, env); //Chama a função que trata a requisição do telegram
-  }else if(request.headers.get('X-Page-Token')===env.tokenSite){ //verifica se a página que esta solicitando esta autorizada a receber os dados
-     // return handleJson(request, env);  //Chama a função que envia os dados para a hospedagem
+  }else if(request.headers.get('X-Page-Token')=== (env.tokenSite.split(','))[1]){ //verifica se a página que esta solicitando esta autorizada a receber os dados
+     return handleJson(request, env);  //Chama a função que envia os dados para a hospedagem
   }else{ 
     /*await sendMessage('Acesso Negado',env);*/ return new Response('Acesso Negado',{status:200})} //Caso não for uma hospedagem autorizada ou o bot do telegram nega o acesso
   },
@@ -16,10 +16,10 @@ async function handleJson(request, env) {
   const id = url.searchParams.get("id");
   const authHeader = request.headers.get("Authorization");
   const origin = request.headers.get("Referer") || request.headers.get("Origin");
+  const pageToken = request.headers.get('X-Page-Token');
 
-  const ALLOWED_ORIGIN = "";     // Exemplo: "https://seusite.com"
-  const AUTH_TOKEN = "";         // Exemplo: "Bearer suatoken123"
-  const VALID_PAGE_TOKEN = "";   // Defina um token válido aqui
+  const tokensPage = env.tokenSite;
+  const [ALLOWED_ORIGIN, VALID_PAGE_TOKEN, AUTH_TOKEN] = tokensPage.split(',');
 
   // Verificação de domínio autorizado
   if (origin !== ALLOWED_ORIGIN) {
@@ -537,7 +537,7 @@ async function sendMessage(message, env) {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   const mensagem = encodeURIComponent(message);
-  const [botToken, chatId] = env.bot_Token.join(',')
+  const [botToken, chatId, ] = env.env.bot_Token.split(',');
   const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=-4774731816&text=${mensagem}`;
 
   try {
@@ -570,7 +570,7 @@ async function sendMidia(midia, env) {
   const isArray = Array.isArray(midia);
   const file = isArray ? midia[0] : midia;
   const caption = isArray ? midia[1] || '' : '';
-  const [botToken, chatId] = env.bot_Token.join(',')
+  const [botToken, chatId, ] = env.env.bot_Token.split(',');
 
   const formData = new FormData();
   formData.append('chat_id', chatId);
