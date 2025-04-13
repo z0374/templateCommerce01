@@ -8,7 +8,7 @@ export default { //Exporta as variáveis de ambientes
   }else{ 
     /*await sendMessage('Acesso Negado',env);*/ return new Response('Acesso Negado',{status:200})} //Caso não for uma hospedagem autorizada ou o bot do telegram nega o acesso
   },
-};
+}; 
 
 async function handleJson(request, env) {
   const url = new URL(request.url);
