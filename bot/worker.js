@@ -8,9 +8,9 @@ export default { //Exporta as variáveis de ambientes
   }else{ 
     /*await sendMessage('Acesso Negado',env);*/ return new Response('Acesso Negado',{status:200})} //Caso não for uma hospedagem autorizada ou o bot do telegram nega o acesso
   },
-}; 
+};
 
-async function handleJson(request, env) {
+async function handleJson(request, env) { 
   const url = new URL(request.url);
   const tipo = url.searchParams.get("tipo");
   const id = url.searchParams.get("id");
@@ -203,7 +203,7 @@ await processos(messageText);
 			
               switch (userState.state.toLowerCase()) {  //abre uma chave utilizando o estado do usuário em minúsculo
 			      
-                //CABEÇALHO DA PÁGINA
+                //CABEÇALHO DA PÁGINA 400
                   case 'waiting_section_cabecalho':
                     userState.procesCont = 0;
                     userState.state = 'waiting_logo_cabecalho';
@@ -406,7 +406,7 @@ await processos(messageText);
       }
   }
 
-}catch {await sendMessage('Sem requisição WEBHOOK'); return new Response('ok',{status:200})}
+}catch {await sendMessage('Sem requisição WEBHOOK',env); return new Response('ok',{status:200})}
 }
 
 	async function cep(numero) {
@@ -537,8 +537,8 @@ async function sendMessage(message, env) {
   await new Promise(resolve => setTimeout(resolve, 500));
   
   const mensagem = encodeURIComponent(message);
-  const [botToken, chatId, ] = env.env.bot_Token.split(',');
-  const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=-4774731816&text=${mensagem}`;
+  const [botToken, chatId, ] = env.bot_Token.split(',');
+  const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${mensagem}`;
 
   try {
     const response = await fetch(telegramUrl, {
@@ -655,7 +655,7 @@ async function recUser(userId, update, env) {
 
   async function recFile(fileId, env) {
    try{
-    const botToken = (env.bot_Token.split(','))[1];
+    const botToken = (env.bot_Token.split(','))[0];
     const fileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`;
     const fileResponse = await fetch(fileUrl);
     const fileData = await fileResponse.json();
